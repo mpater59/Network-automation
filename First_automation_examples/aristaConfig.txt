@@ -1,0 +1,63 @@
+hostname: R1
+ip: 10.0.1.10
+username: admin
+password: admin1
+secret: admin1
+port: 22
+eth1: 192.168.1.1/24
+eth2: 10.0.0.1/30
+#eth3: delete
+loopback 0: 1.1.1.1/32
+loopback 1: 192.168.10.10/24
+#loopback 2: delete
+#static: 192.168.3.0/24
+#int: 10.0.0.2
+#int: 10.0.0.3
+ospf: 1
+router-id: 1.1.1.1
+network: 192.168.1.0/24 area 0.0.0.0
+network: 192.168.10.0/24 area 0.0.0.0
+network: 10.0.0.0/30 area 0.0.0.0
+network: 1.1.1.1/32 area 0.0.0.0
+passive int: eth1
+passive int: man1
+
+hostname: R2
+ip: 10.0.1.20
+username: admin
+password: admin1
+secret: admin1
+port: 22
+eth1: 192.168.2.1/24
+eth2: 10.0.0.2/30
+eth3: 10.0.0.5/30
+loopback 0: 1.1.1.1/32
+loopback 1: 192.168.20.10/24
+ospf: 1
+router-id: 2.2.2.2
+network: 192.168.2.0/24 area 0.0.0.0
+network: 192.168.20.0/24 area 0.0.0.0
+network: 10.0.0.0/30 area 0.0.0.0
+network: 10.0.0.4/30 area 0.0.0.0
+network: 2.2.2.2/32 area 0.0.0.0
+passive int: eth1
+passive int: man1
+
+hostname: R3
+ip: 10.0.1.30
+username: admin
+password: admin1
+secret: admin1
+port: 22
+eth1: 192.168.3.1/24
+eth3: 10.0.0.6/30
+loopback 0: 3.3.3.3/32
+loopback 1: 192.168.30.10/24
+ospf: 1
+router-id: 3.3.3.3
+network: 192.168.3.0/24 area 0.0.0.0
+network: 192.168.30.0/24 area 0.0.0.0
+network: 10.0.0.4/30 area 0.0.0.0
+network: 3.3.3.3/32 area 0.0.0.0
+passive int: eth1
+passive int: man1
