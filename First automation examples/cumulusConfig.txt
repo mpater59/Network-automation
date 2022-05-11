@@ -1,0 +1,65 @@
+hostname: R1
+ip: 10.0.1.10
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+swp1: 192.168.1.1/24
+swp2: 10.0.0.1/30
+add loopback: 1.1.1.1/32
+add loopback: 192.168.1.10/24
+add loopback: 192.168.10.10/24
+#del loopback: 2.2.2.2/32
+#static: 192.168.3.0/24
+#add int: 10.0.0.2
+#add int: 10.0.0.3
+ospf:
+router-id: 1.1.1.1
+network: 192.168.1.0/24 area 0.0.0.0
+network: 192.168.10.0/24 area 0.0.0.0
+network: 10.0.0.0/30 area 0.0.0.0
+network: 1.1.1.1/32 area 0.0.0.0
+passive int: swp1
+passive int: eth0
+
+hostname: R2
+ip: 10.0.1.20
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+swp1: 192.168.2.1/24
+swp2: 10.0.0.2/30
+swp3: 10.0.0.5/30
+add loopback: 2.2.2.2/32
+add loopback: 192.168.2.10/24
+add loopback: 192.168.20.10/24
+ospf:
+router-id: 2.2.2.2
+network: 192.168.2.0/24 area 0.0.0.0
+network: 192.168.20.0/24 area 0.0.0.0
+network: 10.0.0.0/30 area 0.0.0.0
+network: 10.0.0.4/30 area 0.0.0.0
+network: 2.2.2.2/32 area 0.0.0.0
+passive int: swp1
+passive int: eth0
+
+hostname: R3
+ip: 10.0.1.30
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+swp1: 192.168.3.1/24
+swp3: 10.0.0.6/30
+add loopback: 3.3.3.3/32
+add loopback: 192.168.3.10/24
+add loopback: 192.168.30.10/24
+ospf:
+router-id: 3.3.3.3
+network: 192.168.3.0/24 area 0.0.0.0
+network: 192.168.30.0/24 area 0.0.0.0
+network: 10.0.0.4/30 area 0.0.0.0
+network: 3.3.3.3/32 area 0.0.0.0
+passive int: swp1
+passive int: eth0
