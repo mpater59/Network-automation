@@ -10,6 +10,7 @@ for counter, device in enumerate(devices):
         print(key + " : " + str(value))
 """
 deviceConnection = []
+commands = []
 for device in devices:
     deviceConnectionTemp = {
         "device_type": device.get("device type"),
@@ -20,13 +21,34 @@ for device in devices:
         "port": device.get("port"),
         "verbose": True
     }
-    test_command = device.get("test command")
     deviceConnection.append(deviceConnectionTemp)
+    commandsTemp = []
+    if device.get("node type") == "FRR":
+        commandsTemp.append("vtysh")
+        commandsTemp.append("conf t")
+        for interface in device.get("interfaces"):
+            commandsTemp.append(f"int {interface}")
+            for ipAddr in device.get("interfaces").get(interface).get("add ip address"):
+                if ipAddr:
+                    commandsTemp.append(f"ip address {ipAddr}")
+            for ipAddr in device.get("interfaces").get(interface).get("del ip address"):
+                if ipAddr:
+                    commandsTemp.append(f"no ip address {ipAddr}")
+            if device.get("interfaces").get(interface).get("shutdown"):
+                commandsTemp.append("shutdown")
+            elif not device.get("interfaces").get(interface).get("shutdown"):
+                commandsTemp.append("no shutdown")
+            commandsTemp.append("exit")
+    commandsTemp.append("exit")
+    if device.get("copy to startup-config"):
+        commandsTemp.append("copy running-config startup-config")
+    commandsTemp.append("show running-config")
+    commands.append(commandsTemp)
 
-print(test_command)
+print(commands)
 
-for device in deviceConnection:
+for counter, device in enumerate(deviceConnection):
     connection = ConnectHandler(**device)
-    output = connection.send_command(test_command)
+    output = connection.send_config_set(commands[counter])
     print(output)
     connection.disconnect()

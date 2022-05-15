@@ -7,4 +7,11 @@ username: root
 password: root
 secret: root
 port: 22
-test command: pwd
+interfaces:
+  eth1:
+    add ip address:
+      - 10.10.0.1/30
+    del ip address:
+      - null
+    shutdown: no
+copy to startup-config: true
