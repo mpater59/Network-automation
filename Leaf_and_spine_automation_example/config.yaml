@@ -3,8 +3,8 @@ hostname: "Spine1"
 node type: "FRR"
 device type: "linux"
 ip address: "10.0.0.11"
-username: null
-password: null
-secret: null
+username: root
+password: root
+secret: root
 port: 22
-test command: 'echo "Connection is working"'
+test command: pwd

@@ -20,11 +20,13 @@ for device in devices:
         "port": device.get("port"),
         "verbose": True
     }
+    test_command = device.get("test command")
     deviceConnection.append(deviceConnectionTemp)
+
+print(test_command)
 
 for device in deviceConnection:
     connection = ConnectHandler(**device)
-    output = connection.send_command(device[9])
-    if len(output):
-        print(output)
+    output = connection.send_command(test_command)
+    print(output)
     connection.disconnect()
