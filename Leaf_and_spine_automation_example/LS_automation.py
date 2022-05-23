@@ -187,7 +187,7 @@ for counter, device in enumerate(devices):
                             commandsTemp.append(f'net add bgp neighbor {neighbor} update-source \
 {device.get("bgp").get("neighbors").get(neighbor).get("update")}')
                         if device.get("bgp").get("neighbors").get(neighbor).get("activate evpn"):
-                            commandsTemp.append(f"net add bgp l2vpn evpn neighbor {neighbor} active")
+                            commandsTemp.append(f"net add bgp l2vpn evpn neighbor {neighbor} activate")
                 if device.get("bgp").get("advertise-all-vni"):
                     commandsTemp.append("net add bgp l2vpn evpn advertise-all-vni")
         # vlan configuration
