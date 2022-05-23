@@ -182,7 +182,6 @@ interfaces:
 loopback:
   add ip address:
     - 1.1.1.101/32
-  shutdown: no
 ospf:
   router-id: 1.1.1.101
   area:
@@ -269,7 +268,6 @@ interfaces:
 loopback:
   add ip address:
     - 1.1.1.102/32
-  shutdown: no
 ospf:
   router-id: 1.1.1.102
   area:
@@ -343,7 +341,6 @@ interfaces:
 loopback:
   add ip address:
     - 1.1.1.103/32
-  shutdown: no
 ospf:
   router-id: 1.1.1.103
   area:
@@ -418,7 +415,6 @@ interfaces:
 loopback:
   add ip address:
     - 1.1.1.104/32
-  shutdown: no
 ospf:
   router-id: 1.1.1.104
   area:

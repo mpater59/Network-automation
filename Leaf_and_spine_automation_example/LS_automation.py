@@ -141,10 +141,6 @@ for counter, device in enumerate(devices):
             if device.get("loopback").get("del ip address"):
                 for ipAddr in device.get("loopback").get("del ip address"):
                     commandsTemp.append(f"net del loopback lo ip address {ipAddr}")
-            if device.get("interfaces").get("shutdown"):
-                commandsTemp.append("net add loopback lo link down")
-            elif not device.get("interfaces").get("shutdown"):
-                commandsTemp.append("net del loopback lo link down")
         # ospf configuration
         if device.get("ospf"):
             commandsTemp.append("net del ospf")
@@ -185,7 +181,7 @@ for counter, device in enumerate(devices):
                 if device.get("bgp").get("neighbors"):
                     for neighbor in device.get("bgp").get("neighbors"):
                         if device.get("bgp").get("neighbors").get(neighbor).get("remote"):
-                            commandsTemp.append(f'net add neighbor {neighbor} remote-as \
+                            commandsTemp.append(f'net add bgp neighbor {neighbor} remote-as \
 {device.get("bgp").get("neighbors").get(neighbor).get("remote")}')
                         if device.get("bgp").get("neighbors").get(neighbor).get("update"):
                             commandsTemp.append(f'net add bgp neighbor {neighbor} update-source \
