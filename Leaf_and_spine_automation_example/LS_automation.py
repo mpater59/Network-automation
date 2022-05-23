@@ -232,10 +232,9 @@ for counter, device in enumerate(devices):
 
 for deviceCommands in commands:
     print(deviceCommands)
-"""
+
 for counter, device in enumerate(deviceConnection):
     connection = ConnectHandler(**device)
     output = connection.send_config_set(commands[counter])
     print(output)
     connection.disconnect()
-"""
