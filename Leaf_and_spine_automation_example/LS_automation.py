@@ -1,3 +1,7 @@
+import socket
+
+import netmiko.ssh_exception
+import paramiko.buffered_pipe
 import yaml
 from netmiko import ConnectHandler
 
@@ -85,10 +89,10 @@ for counter, device in enumerate(devices):
                 if device.get("bgp").get("neighbors"):
                     for neighbor in device.get("bgp").get("neighbors"):
                         if device.get("bgp").get("neighbors").get(neighbor).get("remote"):
-                            commandsTemp.append(f'router neighbors {neighbor} remote-as \
+                            commandsTemp.append(f'neighbor {neighbor} remote-as \
 {device.get("bgp").get("neighbors").get(neighbor).get("remote")}')
                         if device.get("bgp").get("neighbors").get(neighbor).get("update"):
-                            commandsTemp.append(f'router neighbors {neighbor} update-source \
+                            commandsTemp.append(f'neighbor {neighbor} update-source \
 {device.get("bgp").get("neighbors").get(neighbor).get("update")}')
                         if device.get("bgp").get("neighbors").get(neighbor).get("activate evpn"):
                             commandsTemp.append("address-family l2vpn evpn")
@@ -234,7 +238,16 @@ for deviceCommands in commands:
     print(deviceCommands)
 
 for counter, device in enumerate(deviceConnection):
-    connection = ConnectHandler(**device)
-    output = connection.send_config_set(commands[counter])
-    print(output)
-    connection.disconnect()
+    for trial in range (3):
+        try:
+            connection = ConnectHandler(**device)
+            output = connection.send_config_set(commands[counter])
+            print(output)
+            connection.disconnect()
+            break
+        except paramiko.buffered_pipe.PipeTimeout:
+            print(f"Timeout - {trial + 1}")
+        except socket.timeout:
+            print(f"Timeout - {trial + 1}")
+        except netmiko.ssh_exception.NetmikoTimeoutException:
+            print(f"Timeout - {trial + 1}")
