@@ -24,10 +24,9 @@ interfaces:
     ip address:
       - 10.1.4.1/30
     shutdown: no
-  lo:
-    ip address:
-      - 1.1.1.11/32
-    shutdown: no
+loopback:
+  ip address:
+    - 1.1.1.11/32
 ospf:
   router-id: 1.1.1.11
   area:
@@ -106,10 +105,9 @@ interfaces:
     ip address:
       - 10.2.4.1/30
     shutdown: no
-  lo:
-    ip address:
-      - 1.1.1.12/32
-    shutdown: no
+loopback:
+  ip address:
+    - 1.1.1.12/32
 ospf:
   router-id: 1.1.1.12
   area:
