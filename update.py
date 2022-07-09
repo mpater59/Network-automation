@@ -34,7 +34,7 @@ for counter, device in enumerate(deviceConnection):
     for trial in range(3):
         try:
             connection = ConnectHandler(**device)
-            output = connection.send_config_set(commands[counter])
+            output = connection.send_config_set(commands)
             print(output)
             connection.disconnect()
             break
