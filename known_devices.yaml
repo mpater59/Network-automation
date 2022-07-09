@@ -1,0 +1,54 @@
+---
+#Spine 1
+device type: linux
+ip address: 10.0.0.11
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+...
+---
+#Spine 2
+device type: linux
+ip address: 10.0.0.12
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+...
+---
+#Leaf 1
+device type: linux
+ip address: 10.0.0.101
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+...
+---
+#Leaf 2
+device type: linux
+ip address: 10.0.0.102
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+...
+---
+#Leaf 3
+device type: linux
+ip address: 10.0.0.103
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+...
+---
+#Leaf 4
+device type: linux
+ip address: 10.0.0.104
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+...
