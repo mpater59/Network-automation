@@ -36,6 +36,7 @@ for counter, device in enumerate(deviceConnection):
             connection = ConnectHandler(**device)
             output = connection.send_config_set(commands)
             print(repr(output))
+            print(output)
             connection.disconnect()
             break
         except paramiko.buffered_pipe.PipeTimeout:
