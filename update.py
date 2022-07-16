@@ -7,10 +7,15 @@ import yaml
 from netmiko import ConnectHandler
 
 
-def updateOSPF(configuration_list):
-    for line in configuration_list:
-        if "router osp" in line:
-            print("OSPF detect")
+def updateOSPF(configuration):
+    iter_skip = 0
+    for i, line in enumerate(configuration):
+        if "router ospf" in line:
+            if "  " in configuration[i + 1]:
+                iter_skip += 1
+                if "ospf router-id" in configuration:
+                    print("Test")
+                    break
 
 
 stream = open("known_devices.yaml", 'r')
