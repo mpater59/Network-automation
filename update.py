@@ -9,7 +9,7 @@ from netmiko import ConnectHandler
 
 def updateOSPF(configuration_list):
     for line in configuration_list:
-        if line is "router osp":
+        if "router osp" in line:
             print("OSPF detect")
 
 
