@@ -10,7 +10,7 @@ stream = open("known_devices.yaml", 'r')
 devicesTemp = yaml.load_all(stream, Loader=yaml.SafeLoader)
 devices = []
 for counter, device in enumerate(devicesTemp):
-    print(f"Device {counter + 1}. - test:")
+    print(f"Device {counter + 1}.:")
     devices.append(device)
     for key, value in device.items():
         print(key + " : " + str(value))
@@ -35,7 +35,7 @@ for counter, device in enumerate(deviceConnection):
         try:
             connection = ConnectHandler(**device)
             output = connection.send_config_set(commands)
-            print(output)
+            print(repr(output))
             connection.disconnect()
             break
         except paramiko.buffered_pipe.PipeTimeout:
