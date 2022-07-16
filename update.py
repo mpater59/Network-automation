@@ -6,6 +6,13 @@ import paramiko
 import yaml
 from netmiko import ConnectHandler
 
+
+def updateOSPF(configuration_list):
+    for line in configuration_list:
+        if line is "router osp":
+            print("OSPF detect")
+
+
 stream = open("known_devices.yaml", 'r')
 devicesTemp = yaml.load_all(stream, Loader=yaml.SafeLoader)
 devices = []
@@ -35,10 +42,9 @@ for counter, device in enumerate(deviceConnection):
         try:
             connection = ConnectHandler(**device)
             output = connection.send_config_set(commands)
-            print(output)
+            # print(output)
             outputList = output.splitlines()
-            for line in outputList:
-                print(line)
+            updateOSPF(outputList)
             connection.disconnect()
             break
         except paramiko.buffered_pipe.PipeTimeout:
