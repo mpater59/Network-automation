@@ -12,6 +12,7 @@ from bgp import updateBGP
 from vlanBridgeVxlan import updateVLAN
 from vlanBridgeVxlan import updateBridge
 from vlanBridgeVxlan import updateVxLAN
+from other import updateHostname
 
 
 stream = open("../known_devices.yaml", 'r')
@@ -68,6 +69,7 @@ for counter, device in enumerate(deviceConnection):
             print(output)
             outputList = output.splitlines()
             configurationList.append({})
+            configurationList[counter].update(updateHostname(outputList))
             configurationList[counter].update(updateInterfaces(outputList))
             configurationList[counter].update(updateLoopback(outputList))
             configurationList[counter].update(updateOSPF(outputList))

@@ -4,9 +4,7 @@ import re
 def updateInterfaces(configuration):
     interfaces = {"interfaces": {}}
     for i, line in enumerate(configuration):
-        if re.search("^interface [\w]", line):
-            if line == "interface lo":
-                continue
+        if re.search("^interface swp[\d]", line):
             iter_skip = 1
             interface = line.split(" ")[1]
             interfaces["interfaces"][interface] = {}

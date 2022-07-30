@@ -14,7 +14,7 @@ def updateOSPF(configuration):
                 if not re.search("^  .*", configuration[i + iter_skip]):
                     if configuration[i + iter_skip] == '':
                         break
-        elif re.search("^interface [\w]", line):
+        elif re.search("^interface swp[\d]", line) or re.search("^interface lo", line):
             iter_skip = 1
             interface = line.split(" ")[1]
             if ospf.get("ospf").get("interfaces") is None:
