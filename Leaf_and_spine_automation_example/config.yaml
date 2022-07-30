@@ -29,23 +29,26 @@ loopback:
     - 1.1.1.11/32
 ospf:
   router-id: 1.1.1.11
-  area:
-    0.0.0.0:
-      interfaces:
-        lo:
-          passive interface: yes
-        swp1:
-          passive interface: no
-          network: point-to-point
-        swp2:
-          passive interface: no
-          network: point-to-point
-        swp3:
-          passive interface: no
-          network: point-to-point
-        swp4:
-          passive interface: no
-          network: point-to-point
+  interfaces:
+    lo:
+      area: 0.0.0.0
+      passive interface: yes
+    swp1:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp3:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp4:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
 bgp:
   as: 100
   router-id: 1.1.1.11
@@ -110,23 +113,26 @@ loopback:
     - 1.1.1.12/32
 ospf:
   router-id: 1.1.1.12
-  area:
-    0.0.0.0:
-      interfaces:
-        lo:
-          passive interface: yes
-        swp1:
-          passive interface: no
-          network: point-to-point
-        swp2:
-          passive interface: no
-          network: point-to-point
-        swp3:
-          passive interface: no
-          network: point-to-point
-        swp4:
-          passive interface: no
-          network: point-to-point
+  interfaces:
+    lo:
+      area: 0.0.0.0
+      passive interface: yes
+    swp1:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp3:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp4:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
 bgp:
   as: 100
   router-id: 1.1.1.12
@@ -183,17 +189,18 @@ loopback:
     - 1.1.1.101/32
 ospf:
   router-id: 1.1.1.101
-  area:
-    0.0.0.0:
-      interfaces:
-        lo:
-          passive interface: yes
-        swp1:
-          passive interface: no
-          network: point-to-point
-        swp2:
-          passive interface: no
-          network: point-to-point
+  interfaces:
+    lo:
+      area: 0.0.0.0
+      passive interface: yes
+    swp1:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
 bgp:
   as: 100
   router-id: 1.1.1.101
@@ -264,17 +271,18 @@ loopback:
     - 1.1.1.102/32
 ospf:
   router-id: 1.1.1.102
-  area:
-    0.0.0.0:
-      interfaces:
-        lo:
-          passive interface: yes
-        swp1:
-          passive interface: no
-          network: point-to-point
-        swp2:
-          passive interface: no
-          network: point-to-point
+  interfaces:
+    lo:
+      area: 0.0.0.0
+      passive interface: yes
+    swp1:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
 bgp:
   as: 100
   router-id: 1.1.1.102
@@ -332,17 +340,18 @@ loopback:
     - 1.1.1.103/32
 ospf:
   router-id: 1.1.1.103
-  area:
-    0.0.0.0:
-      interfaces:
-        lo:
-          passive interface: yes
-        swp1:
-          passive interface: no
-          network: point-to-point
-        swp2:
-          passive interface: no
-          network: point-to-point
+  interfaces:
+    lo:
+      area: 0.0.0.0
+      passive interface: yes
+    swp1:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
 bgp:
   as: 100
   router-id: 1.1.1.103
@@ -401,17 +410,18 @@ loopback:
     - 1.1.1.104/32
 ospf:
   router-id: 1.1.1.104
-  area:
-    0.0.0.0:
-      interfaces:
-        lo:
-          passive interface: yes
-        swp1:
-          passive interface: no
-          network: point-to-point
-        swp2:
-          passive interface: no
-          network: point-to-point
+  interfaces:
+    lo:
+      area: 0.0.0.0
+      passive interface: yes
+    swp1:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      passive interface: no
+      network: point-to-point
 bgp:
   as: 100
   router-id: 1.1.1.104

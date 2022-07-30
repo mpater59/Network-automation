@@ -57,25 +57,27 @@ for counter, device in enumerate(devices):
         commandsTemp.append("net add ospf")
         if device.get("ospf").get("router-id"):
             commandsTemp.append(f"net add ospf router-id {device.get('ospf').get('router-id')}")
-        if device.get("ospf").get("area"):
-            for area in device.get("ospf").get("area"):
-                if device.get("ospf").get("area").get(area).get("interfaces"):
-                    for interface in device.get("ospf").get("area").get(area).get("interfaces"):
-                        if interface == "lo":
-                            commandsTemp.append(f"net add loopback {interface} ospf area {area}")
-                            if device.get("ospf").get("area").get(area).get("interfaces").get(interface).get("passive interface"):
-                                commandsTemp.append(f"net add loopback {interface} ospf passive")
-                            else:
-                                commandsTemp.append(f"net del loopback {interface} ospf passive")
-                            continue
-                        commandsTemp.append(f"net add interface {interface} ospf area {area}")
-                        if device.get("ospf").get("area").get(area).get("interfaces").get(interface).get("passive interface"):
-                            commandsTemp.append(f"net add interface {interface} ospf passive")
-                        else:
-                            commandsTemp.append(f"net del interface {interface} ospf passive")
-                        if device.get("ospf").get("area").get(area).get("interfaces").get(interface).get("network"):
-                            commandsTemp.append(f'net add interface {interface} ospf network \
-{device.get("ospf").get("area").get(area).get("interfaces").get(interface).get("network")}')
+        if device.get("ospf").get("interfaces"):
+            for interface in device.get("ospf").get("interfaces"):
+                if interface == "lo":
+                    if device.get("ospf").get("interfaces").get(interface).get("area"):
+                        area = device.get("ospf").get("interfaces").get(interface).get("area")
+                        commandsTemp.append(f"net add loopback {interface} ospf area {area}")
+                    if device.get("ospf").get("interfaces").get(interface).get("passive interface"):
+                        commandsTemp.append(f"net add loopback {interface} ospf passive")
+                    else:
+                        commandsTemp.append(f"net del loopback {interface} ospf passive")
+                    continue
+                if device.get("ospf").get("interfaces").get(interface).get("area"):
+                    area = device.get("ospf").get("interfaces").get(interface).get("area")
+                    commandsTemp.append(f"net add interface {interface} ospf area {area}")
+                if device.get("ospf").get("interfaces").get(interface).get("passive interface"):
+                    commandsTemp.append(f"net add interface {interface} ospf passive")
+                else:
+                    commandsTemp.append(f"net del interface {interface} ospf passive")
+                if device.get("ospf").get("interfaces").get(interface).get("network"):
+                    commandsTemp.append(f'net add interface {interface} ospf network \
+{device.get("ospf").get("interfaces").get(interface).get("network")}')
     # bgp configuration
     if device.get("bgp"):
         if device.get("bgp").get("as"):
