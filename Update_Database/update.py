@@ -89,10 +89,5 @@ for counter, device in enumerate(deviceConnection):
         except netmiko.ssh_exception.NetmikoTimeoutException:
             print(f"Timeout - {trial + 1}.")
 
-configurations = []
-for counter, configuration in enumerate(configurationList):
-    print(f"Device {counter + 1}.:")
-    configurations.append(configuration)
-    for key, value in configuration.items():
-        print(key + " : " + str(value))
-    print()
+for key, value in configurationList.items():
+    print(key + " : " + str(value))
