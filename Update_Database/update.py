@@ -25,8 +25,6 @@ for counter, device in enumerate(devicesTemp):
         print(key + " : " + str(value))
     print()
 
-
-commands = ["net show configuration"]
 deviceConnection = []
 
 for counter, device in enumerate(devices):
@@ -66,7 +64,7 @@ for counter, device in enumerate(deviceConnection):
     for trial in range(3):
         try:
             connection = ConnectHandler(**device)
-            output = connection.send_config_set(commands)
+            output = connection.send_command("net show configuration")
             print(output)
             configurationList.append({})
             configurationList[counter].update(updateInterfaces(output))
