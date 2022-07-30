@@ -68,8 +68,8 @@ for counter, device in enumerate(deviceConnection):
             connection = ConnectHandler(**device)
             output = connection.send_config_set(commands)
             print(output)
-            configurationList.append({updateOSPF(output)})
-            configurationList[counter].update()
+            configurationList.append({})
+            configurationList[counter].update(updateOSPF(output))
             connection.disconnect()
             break
         except paramiko.buffered_pipe.PipeTimeout:
