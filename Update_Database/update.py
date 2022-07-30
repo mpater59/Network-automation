@@ -69,7 +69,13 @@ for counter, device in enumerate(deviceConnection):
             output = connection.send_config_set(commands)
             print(output)
             configurationList.append({})
+            configurationList[counter].update(updateInterfaces(output))
+            configurationList[counter].update(updateLoopback(output))
             configurationList[counter].update(updateOSPF(output))
+            configurationList[counter].update(updateBGP(output))
+            configurationList[counter].update(updateVLAN(output))
+            configurationList[counter].update(updateBridge(output))
+            configurationList[counter].update(updateVxLAN(output))
             connection.disconnect()
             break
         except paramiko.buffered_pipe.PipeTimeout:
