@@ -1,5 +1,6 @@
 import sys
 from socket import socket
+from datetime import datetime
 
 import netmiko
 import paramiko
@@ -40,7 +41,9 @@ for counter, device in enumerate(devices):
     })
 
 
-configurationList = []
+configurationList = {}
+now = datetime.now()
+configurationList["time"] = now.strftime("%Y/%m/%d %H:%M:%S")
 """
 text_file = open("test_configuration2", "r")
 output = text_file.read()
@@ -68,15 +71,15 @@ for counter, device in enumerate(deviceConnection):
             output = connection.send_command("net show configuration")
             print(output)
             outputList = output.splitlines()
-            configurationList.append({})
-            configurationList[counter].update(updateHostname(outputList))
-            configurationList[counter].update(updateInterfaces(outputList))
-            configurationList[counter].update(updateLoopback(outputList))
-            configurationList[counter].update(updateOSPF(outputList))
-            configurationList[counter].update(updateBGP(outputList))
-            configurationList[counter].update(updateVLAN(outputList))
-            configurationList[counter].update(updateBridge(outputList))
-            configurationList[counter].update(updateVxLAN(outputList))
+            configurationList[f"device {counter + 1}"] = {}
+            configurationList[f"device {counter + 1}"].update(updateHostname(outputList))
+            configurationList[f"device {counter + 1}"].update(updateInterfaces(outputList))
+            configurationList[f"device {counter + 1}"].update(updateLoopback(outputList))
+            configurationList[f"device {counter + 1}"].update(updateOSPF(outputList))
+            configurationList[f"device {counter + 1}"].update(updateBGP(outputList))
+            configurationList[f"device {counter + 1}"].update(updateVLAN(outputList))
+            configurationList[f"device {counter + 1}"].update(updateBridge(outputList))
+            configurationList[f"device {counter + 1}"].update(updateVxLAN(outputList))
             connection.disconnect()
             break
         except paramiko.buffered_pipe.PipeTimeout:
