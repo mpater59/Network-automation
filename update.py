@@ -1,4 +1,3 @@
-import sys
 from socket import socket
 from datetime import datetime
 
