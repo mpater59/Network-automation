@@ -25,4 +25,4 @@ else:
     exit()
 newValues = {"$set": {"status": status}}
 dbUpdate = mycol.update_many(updateCondition, newValues)
-print(dbUpdate.acknowledged)
+print(dbUpdate.raw_result)
