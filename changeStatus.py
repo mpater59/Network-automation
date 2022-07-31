@@ -6,6 +6,9 @@ myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
+for arg in sys.argv:
+    print(arg)
+
 if len(sys.argv) != 2:
     print("Enter two parameters!")
     exit()
