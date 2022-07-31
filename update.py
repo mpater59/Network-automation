@@ -103,5 +103,9 @@ for counter, device in enumerate(deviceConnection):
 for key, value in configurationList.items():
     print(key + " : " + str(value))
 
-dbPush = mycol.insert_one(configurationList)
-print(dbPush.inserted_id)
+queryActive = {"active": True}
+newValues = {"$set": {"active": False}}
+dbUpdate = mycol.update_many(queryActive, newValues)
+
+dbInsert = mycol.insert_one(configurationList)
+print(f"New ID: " + str(dbInsert.inserted_id))
