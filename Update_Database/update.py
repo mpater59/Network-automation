@@ -6,6 +6,8 @@ import netmiko
 import paramiko
 import yaml
 from netmiko import ConnectHandler
+import pymongo
+
 from ospf import updateOSPF
 from interfaces import updateInterfaces
 from interfaces import updateLoopback
@@ -15,6 +17,9 @@ from vlanBridgeVxlan import updateBridge
 from vlanBridgeVxlan import updateVxLAN
 from other import updateHostname
 
+myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
+mydb = myclient["configsdb"]
+mycol = mydb["test"]
 
 stream = open("../known_devices.yaml", 'r')
 devicesTemp = yaml.load_all(stream, Loader=yaml.SafeLoader)
@@ -52,16 +57,20 @@ print(output)
 outputList = output.splitlines()
 print("\nTesting!!!\n")
 
-configurationList.append(updateInterfaces(outputList))
-configurationList.append(updateLoopback(outputList))
-configurationList.append(updateOSPF(outputList))
-configurationList.append(updateBGP(outputList))
-configurationList.append(updateVLAN(outputList))
-configurationList.append(updateBridge(outputList))
-configurationList.append(updateVxLAN(outputList))
+configurationList.update(updateHostname(outputList))
+configurationList.update(updateInterfaces(outputList))
+configurationList.update(updateLoopback(outputList))
+configurationList.update(updateOSPF(outputList))
+configurationList.update(updateBGP(outputList))
+configurationList.update(updateVLAN(outputList))
+configurationList.update(updateBridge(outputList))
+configurationList.update(updateVxLAN(outputList))
 
 for configuration in configurationList:
     print(configuration)
+
+dbPush = mycol.insert_one(configurationList)
+print(dbPush.inserted_id)
 """
 
 for counter, device in enumerate(deviceConnection):
@@ -91,3 +100,6 @@ for counter, device in enumerate(deviceConnection):
 
 for key, value in configurationList.items():
     print(key + " : " + str(value))
+
+dbPush = mycol.insert_one(configurationList)
+print(dbPush.inserted_id)
