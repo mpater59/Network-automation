@@ -9,12 +9,12 @@ mycol = mydb["configurations"]
 for arg in sys.argv:
     print(arg)
 
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     print("Enter two parameters!")
     exit()
 
-config_id = sys.argv[0]
-status = sys.argv[1]
+config_id = sys.argv[1]
+status = sys.argv[2]
 
 if re.search("^[\d]/[\d]/[\d] [\d]:[\d]:[\d]$", config_id):
     updateCondition = {"time": config_id}
