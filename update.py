@@ -8,20 +8,20 @@ import yaml
 from netmiko import ConnectHandler
 import pymongo
 
-from ospf import updateOSPF
-from interfaces import updateInterfaces
-from interfaces import updateLoopback
-from bgp import updateBGP
-from vlanBridgeVxlan import updateVLAN
-from vlanBridgeVxlan import updateBridge
-from vlanBridgeVxlan import updateVxLAN
-from other import updateHostname
+from Update_Database.ospf import updateOSPF
+from Update_Database.interfaces import updateInterfaces
+from Update_Database.interfaces import updateLoopback
+from Update_Database.bgp import updateBGP
+from Update_Database.vlanBridgeVxlan import updateVLAN
+from Update_Database.vlanBridgeVxlan import updateBridge
+from Update_Database.vlanBridgeVxlan import updateVxLAN
+from Update_Database.other import updateHostname
 
 myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
-stream = open("../known_devices.yaml", 'r')
+stream = open("known_devices.yaml", 'r')
 devicesTemp = yaml.load_all(stream, Loader=yaml.SafeLoader)
 devices = []
 
@@ -102,4 +102,4 @@ for key, value in configurationList.items():
     print(key + " : " + str(value))
 
 dbPush = mycol.insert_one(configurationList)
-print(dbPush.inserted_id)
+print("\nDocument ID: " + dbPush.inserted_id)
