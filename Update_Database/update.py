@@ -19,7 +19,7 @@ from other import updateHostname
 
 myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
-mycol = mydb["test"]
+mycol = mydb["configurations"]
 
 stream = open("../known_devices.yaml", 'r')
 devicesTemp = yaml.load_all(stream, Loader=yaml.SafeLoader)
