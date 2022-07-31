@@ -49,6 +49,8 @@ for counter, device in enumerate(devices):
 configurationList = {}
 now = datetime.now()
 configurationList["time"] = now.strftime("%Y/%m/%d %H:%M:%S")
+configurationList["status"] = "unverified"
+configurationList["active"] = True
 """
 text_file = open("test_configuration2", "r")
 output = text_file.read()
