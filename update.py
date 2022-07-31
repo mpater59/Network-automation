@@ -102,4 +102,4 @@ for key, value in configurationList.items():
     print(key + " : " + str(value))
 
 dbPush = mycol.insert_one(configurationList)
-print("\nDocument ID: " + dbPush.inserted_id)
+print(dbPush.inserted_id)
