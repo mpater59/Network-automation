@@ -19,7 +19,7 @@ status = sys.argv[2]
 if re.search("^[\d]/[\d]/[\d] [\d]:[\d]:[\d]$", config_id):
     updateCondition = {"time": config_id}
 elif re.search("[0-9a-f]", config_id):
-    updateCondition = {"_id": config_id}
+    updateCondition = {"_id": f'ObjectId("{config_id}")'}
 else:
     print("First parameter has to be date with time with YYYY/MM/DD HH:MM:SS format or ID configuration in MongoDB!")
     exit()
