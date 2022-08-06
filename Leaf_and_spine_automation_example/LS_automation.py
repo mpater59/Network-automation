@@ -19,7 +19,7 @@ deviceConnection = []
 commands = []
 for counter, device in enumerate(devices):
     deviceConnectionTemp = {
-        "device_type": device.get("device type"),
+        "device_type": device.get("machine type"),
         "ip": device.get("ip address"),
         "username": device.get("username"),
         "password": device.get("password"),

@@ -35,7 +35,7 @@ deviceConnection = []
 
 for counter, device in enumerate(devices):
     deviceConnection.append({
-        "device_type": device.get("device type"),
+        "device_type": device.get("machine type"),
         "ip": device.get("ip address"),
         "username": device.get("username"),
         "password": device.get("password"),
@@ -83,6 +83,7 @@ for counter, device in enumerate(deviceConnection):
             print(output)
             outputList = output.splitlines()
             configurationList["devices"][f"device {counter + 1}"] = {}
+            configurationList["devices"][f"device {counter + 1}"]["device type"] = devices[counter].get("device type")
             configurationList["devices"][f"device {counter + 1}"].update(updateHostname(outputList))
             configurationList["devices"][f"device {counter + 1}"].update(updateInterfaces(outputList))
             configurationList["devices"][f"device {counter + 1}"].update(updateLoopback(outputList))
