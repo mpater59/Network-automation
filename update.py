@@ -1,5 +1,5 @@
 from socket import socket
-from datetime import datetime
+import datetime
 
 import netmiko
 import paramiko
@@ -46,8 +46,7 @@ for counter, device in enumerate(devices):
 
 
 configurationList = {}
-now = datetime.now()
-configurationList["time"] = now.strftime("%Y/%m/%d %H:%M:%S")
+configurationList["time"] = datetime.datetime.now().isoformat()
 configurationList["status"] = "unverified"
 configurationList["active"] = True
 configurationList["devices"] = {}
