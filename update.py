@@ -7,20 +7,20 @@ import yaml
 from netmiko import ConnectHandler
 import pymongo
 
-from Update_Database.ospf import updateOSPF
-from Update_Database.interfaces import updateInterfaces
-from Update_Database.interfaces import updateLoopback
-from Update_Database.bgp import updateBGP
-from Update_Database.vlanBridgeVxlan import updateVLAN
-from Update_Database.vlanBridgeVxlan import updateBridge
-from Update_Database.vlanBridgeVxlan import updateVxLAN
-from Update_Database.other import updateHostname
+from Update_database.ospf import updateOSPF
+from Update_database.interfaces import updateInterfaces
+from Update_database.interfaces import updateLoopback
+from Update_database.bgp import updateBGP
+from Update_database.vlanBridgeVxlan import updateVLAN
+from Update_database.vlanBridgeVxlan import updateBridge
+from Update_database.vlanBridgeVxlan import updateVxLAN
+from Update_database.other import updateHostname
 
 myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
-stream = open("known_devices.yaml", 'r')
+stream = open("knownDevices.yaml", 'r')
 devicesTemp = yaml.load_all(stream, Loader=yaml.SafeLoader)
 devices = []
 
@@ -91,6 +91,7 @@ for counter, device in enumerate(deviceConnection):
             configurationList["devices"][f"device {counter + 1}"].update(updateVLAN(outputList))
             configurationList["devices"][f"device {counter + 1}"].update(updateBridge(outputList))
             configurationList["devices"][f"device {counter + 1}"].update(updateVxLAN(outputList))
+            configurationList["devices"][f"device {counter + 1}"]["hard clear config"] = True
             configurationList["devices"][f"device {counter + 1}"]["commit"] = True
             connection.disconnect()
             break
