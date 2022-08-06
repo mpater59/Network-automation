@@ -46,7 +46,7 @@ for counter, device in enumerate(devices):
 
 
 configurationList = {}
-configurationList["date"] = datetime.datetime.today().replace(microsecond=0)
+configurationList["date"] = datetime.datetime.now()
 configurationList["status"] = "unverified"
 configurationList["active"] = True
 configurationList["devices"] = {}
