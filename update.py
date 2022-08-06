@@ -50,6 +50,7 @@ now = datetime.now()
 configurationList["time"] = now.strftime("%Y/%m/%d %H:%M:%S")
 configurationList["status"] = "unverified"
 configurationList["active"] = True
+configurationList["devices"] = {}
 """
 text_file = open("test_configuration2", "r")
 output = text_file.read()
@@ -81,7 +82,6 @@ for counter, device in enumerate(deviceConnection):
             output = connection.send_command("net show configuration")
             print(output)
             outputList = output.splitlines()
-            configurationList["devices"] = {}
             configurationList["devices"][f"device {counter + 1}"] = {}
             configurationList["devices"][f"device {counter + 1}"].update(updateHostname(outputList))
             configurationList["devices"][f"device {counter + 1}"].update(updateInterfaces(outputList))
