@@ -81,15 +81,17 @@ for counter, device in enumerate(deviceConnection):
             output = connection.send_command("net show configuration")
             print(output)
             outputList = output.splitlines()
-            configurationList[f"device {counter + 1}"] = {}
-            configurationList[f"device {counter + 1}"].update(updateHostname(outputList))
-            configurationList[f"device {counter + 1}"].update(updateInterfaces(outputList))
-            configurationList[f"device {counter + 1}"].update(updateLoopback(outputList))
-            configurationList[f"device {counter + 1}"].update(updateOSPF(outputList))
-            configurationList[f"device {counter + 1}"].update(updateBGP(outputList))
-            configurationList[f"device {counter + 1}"].update(updateVLAN(outputList))
-            configurationList[f"device {counter + 1}"].update(updateBridge(outputList))
-            configurationList[f"device {counter + 1}"].update(updateVxLAN(outputList))
+            configurationList["devices"] = {}
+            configurationList["devices"][f"device {counter + 1}"] = {}
+            configurationList["devices"][f"device {counter + 1}"].update(updateHostname(outputList))
+            configurationList["devices"][f"device {counter + 1}"].update(updateInterfaces(outputList))
+            configurationList["devices"][f"device {counter + 1}"].update(updateLoopback(outputList))
+            configurationList["devices"][f"device {counter + 1}"].update(updateOSPF(outputList))
+            configurationList["devices"][f"device {counter + 1}"].update(updateBGP(outputList))
+            configurationList["devices"][f"device {counter + 1}"].update(updateVLAN(outputList))
+            configurationList["devices"][f"device {counter + 1}"].update(updateBridge(outputList))
+            configurationList["devices"][f"device {counter + 1}"].update(updateVxLAN(outputList))
+            configurationList["devices"][f"device {counter + 1}"]["commit"] = True
             connection.disconnect()
             break
         except paramiko.buffered_pipe.PipeTimeout:
