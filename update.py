@@ -91,7 +91,6 @@ for counter, device in enumerate(deviceConnection):
             configurationList["devices"][f"device {counter + 1}"].update(updateVLAN(outputList))
             configurationList["devices"][f"device {counter + 1}"].update(updateBridge(outputList))
             configurationList["devices"][f"device {counter + 1}"].update(updateVxLAN(outputList))
-            configurationList["devices"][f"device {counter + 1}"]["hard clear config"] = True
             configurationList["devices"][f"device {counter + 1}"]["commit"] = True
             connection.disconnect()
             break

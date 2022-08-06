@@ -14,7 +14,7 @@ def changeStatus(change_type, status=None, config_id=None):
         if status is None:
             status = True
         if config_id is None:
-            config_id = str(mycol.find({}, {"_id": 1}).sort("date", -1)[0].get("_id"))
+            config_id = str(mycol.find({"active": True}, {"_id": 1}).sort("date", -1)[0].get("_id"))
         if re.search("\d+-\d+-\d+T\d+:\d+:\d+.\d+\+\d+:\d+", config_id):
             update_condition = {"time": config_id}
         elif re.search("^[0-9a-f]{24}$", config_id):
@@ -25,7 +25,7 @@ def changeStatus(change_type, status=None, config_id=None):
         if status is None:
             status = "verified"
         if config_id is None:
-            config_id = str(mycol.find({}, {"_id": 1}).sort("date", -1)[0].get("_id"))
+            config_id = str(mycol.find({"active": True}, {"_id": 1}).sort("date", -1)[0].get("_id"))
         if re.search("\d+-\d+-\d+T\d+:\d+:\d+.\d+\+\d+:\d+", config_id):
             update_condition = {"time": config_id}
         elif re.search("^[0-9a-f]{24}$", config_id):
