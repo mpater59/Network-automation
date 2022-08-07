@@ -7,7 +7,7 @@ from netmiko import ConnectHandler
 def devicesConfiguration(devices_list, config_list):
     device_connection = []
     commands = []
-    for counter, device, config in zip(enumerate(devices_list), config_list):
+    for (counter, device), config in zip(enumerate(devices_list), config_list):
         device_connection_temp = {
             "device_type": device.get("machine type"),
             "ip": device.get("ip address"),
