@@ -1,5 +1,6 @@
 ---
 #Spine 1
+hostname: Spine1
 machine type: linux
 ip address: 10.0.0.11
 username: cumulus
@@ -10,6 +11,7 @@ device type: spine
 ...
 ---
 #Spine 2
+hostname: Spine2
 machine type: linux
 ip address: 10.0.0.12
 username: cumulus
@@ -20,6 +22,7 @@ device type: spine
 ...
 ---
 #Leaf 1
+hostname: Leaf1
 machine type: linux
 ip address: 10.0.0.101
 username: cumulus
@@ -30,6 +33,7 @@ device type: leaf
 ...
 ---
 #Leaf 2
+hostname: Leaf2
 machine type: linux
 ip address: 10.0.0.102
 username: cumulus
@@ -40,6 +44,7 @@ device type: leaf
 ...
 ---
 #Leaf 3
+hostname: Leaf3
 machine type: linux
 ip address: 10.0.0.103
 username: cumulus
@@ -50,6 +55,7 @@ device type: leaf
 ...
 ---
 #Leaf 4
+hostname: Leaf4
 machine type: linux
 ip address: 10.0.0.104
 username: cumulus
