@@ -48,6 +48,19 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
     devicesConfiguration(device_list, config_list)
 
 
+def stringToBool(string):
+    string = string.lower()
+    if string in ["true", "yes"]:
+        string = True
+        return string
+    elif string in ["false", "no"]:
+        string = False
+        return string
+    else:
+        print("Entered parameter is not boolean!")
+        exit()
+
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-id", "--config_id", dest="config_id", default=None, help="ID or date of configuration in DB")
@@ -58,4 +71,7 @@ parser.add_argument("-dc", "--del_configs", dest="del_configs", default=False,
 
 args = parser.parse_args()
 
-configRollback(args.config_id, args.soft_rollback, args.del_configs)
+soft_rollback = stringToBool(args.soft_rollback)
+del_configs = stringToBool(args.del_configs)
+
+configRollback(args.config_id, soft_rollback, del_configs)
