@@ -38,7 +38,7 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
                 config_list.append(value)
                 device_exist = True
                 if soft_rollback is False:
-                    config_list[-1]["hard clear config"] = True
+                    config_list[counter]["hard clear config"] = True
                 break
         if device_exist is False:
             if del_configs is True:
