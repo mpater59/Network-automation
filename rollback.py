@@ -11,10 +11,6 @@ myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
-config_id = mycol.find({"status": "verified"}).sort("date", -1)[0].get("devices")
-print(config_id)
-
-
 def configRollback(config_id=None, soft_rollback=True, del_configs=False):
     config_list = []
     device_list = []
