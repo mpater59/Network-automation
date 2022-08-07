@@ -55,16 +55,16 @@ def devicesConfiguration(devices_list, config_list):
                             commands_temp.append(f"net add loopback {interface} ospf area {area}")
                         if config.get("ospf").get("interfaces").get(interface).get("passive interface"):
                             commands_temp.append(f"net add loopback {interface} ospf passive")
-                        else:
-                            commands_temp.append(f"net del loopback {interface} ospf passive")
+                        if config.get("ospf").get("interfaces").get(interface).get("passive interface ipv6"):
+                            commands_temp.append(f"net add loopback {interface} ospf6 passive")
                         continue
                     if config.get("ospf").get("interfaces").get(interface).get("area"):
                         area = config.get("ospf").get("interfaces").get(interface).get("area")
                         commands_temp.append(f"net add interface {interface} ospf area {area}")
                     if config.get("ospf").get("interfaces").get(interface).get("passive interface"):
                         commands_temp.append(f"net add interface {interface} ospf passive")
-                    else:
-                        commands_temp.append(f"net del interface {interface} ospf passive")
+                    if config.get("ospf").get("interfaces").get(interface).get("passive interface ipv6"):
+                        commands_temp.append(f"net add interface {interface} ospf6 passive")
                     if config.get("ospf").get("interfaces").get(interface).get("network"):
                         commands_temp.append(f'net add interface {interface} ospf network \
     {config.get("ospf").get("interfaces").get(interface).get("network")}')
@@ -136,7 +136,7 @@ def devicesConfiguration(devices_list, config_list):
         print(deviceCommands)
 
     for counter, device in enumerate(device_connection):
-        for trial in range(3):
+        for trial in range(5):
             try:
                 connection = ConnectHandler(**device)
                 output = connection.send_config_set(commands[counter])
