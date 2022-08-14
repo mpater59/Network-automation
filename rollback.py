@@ -23,7 +23,7 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
 
     if config_id is not None:
         old_id = str(mycol.find({"active": True}, {"_id": 1}).sort("date", -1)[0].get("_id"))
-        update_condition_old = {'_id': ObjectId(f"{config_id}")}
+        update_condition_old = {'_id': ObjectId(f"{old_id}")}
         if re.search("\d+/\d+/\d+ \d+:\d+:\d+", config_id):
             date = datetime.strptime(config_id, "%d/%m/%Y %H:%M:%S")
             config_id = date
