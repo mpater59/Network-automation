@@ -1,6 +1,7 @@
 import sys
 import pymongo
 import re
+import argparse
 
 from bson import ObjectId
 
@@ -40,17 +41,37 @@ def changeStatus(change_type, status=None, config_id=None):
     print(dbUpdate.raw_result)
 
 
-if len(sys.argv) > 1:
-    change_type = sys.argv[1]
+def stringToBool(string):
+    string = string.lower()
+    if string in ["true", "yes"]:
+        string = True
+        return string
+    elif string in ["false", "no"]:
+        string = False
+        return string
+    else:
+        print("Entered parameter is not boolean!")
+        exit()
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-ct", "--change_type", dest="change_type",
+                    help='Define what parameter will be changed in DB ("active" or "status"')
+parser.add_argument("-s", "--status", dest="status", default=None,
+                    help="Define status that will be inserted to DB for selected configuration")
+parser.add_argument("-id", "--config_id", dest="config_id", default=None,
+                    help="ID or date of configuration in DB")
+
+args = parser.parse_args()
+
+if isinstance(args.status, str):
+    status = stringToBool(args.status)
 else:
-    print("Enter first parameter!")
-    exit()
-if len(sys.argv) > 2:
-    status = sys.argv[2]
+    status = args.status
+if isinstance(args.config_id, str):
+    config_id = stringToBool(args.config_id)
 else:
-    status = None
-if len(sys.argv) > 3:
-    config_id = sys.argv[3]
-else:
-    config_id = None
-changeStatus(change_type, status, config_id)
+    config_id = args.config_id
+
+changeStatus(args.change_type, status, config_id)

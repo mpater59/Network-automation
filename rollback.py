@@ -71,7 +71,13 @@ parser.add_argument("-dc", "--del_configs", dest="del_configs", default=False,
 
 args = parser.parse_args()
 
-soft_rollback = stringToBool(args.soft_rollback)
-del_configs = stringToBool(args.del_configs)
+if isinstance(args.soft_rollback, str):
+    soft_rollback = stringToBool(args.soft_rollback)
+else:
+    soft_rollback = args.soft_rollback
+if isinstance(args.del_configs, str):
+    del_configs = stringToBool(args.del_configs)
+else:
+    del_configs = args.del_configs
 
 configRollback(args.config_id, soft_rollback, del_configs)
