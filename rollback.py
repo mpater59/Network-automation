@@ -1,9 +1,9 @@
-import sys
 import pymongo
 import re
 import yaml
 import argparse
 
+from datetime import datetime
 from bson import ObjectId
 from Devices_configuration.devicesConfiguration import devicesConfiguration
 
@@ -22,14 +22,22 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
         devices.append(device)
 
     if config_id is not None:
-        if re.search("\d+-\d+-\d+T\d+:\d+:\d+.\d+\+\d+:\d+", config_id):
+        old_id = str(mycol.find({"active": True}, {"_id": 1}).sort("date", -1)[0].get("_id"))
+        update_condition_old = {'_id': ObjectId(f"{config_id}")}
+        if re.search("\d+/\d+/\d+ \d+:\d+:\d+", config_id):
+            date = datetime.strptime(config_id, "%d/%m/%Y %H:%M:%S")
+            config_id = date
             config = mycol.find({"date": config_id})[0].get("devices")
+            update_condition_new = {"date": config_id}
         elif re.search("^[0-9a-f]{24}$", config_id):
             config = mycol.find({'_id': ObjectId(f"{config_id}")})[0].get("devices")
+            update_condition_new = {'_id': ObjectId(f"{config_id}")}
         else:
             print("Entered wrong format of first parameter!")
     else:
         config = mycol.find({"status": "verified"}).sort("date", -1)[0].get("devices")
+        document_id = str(mycol.find({"status": "verified"}).sort("date", -1)[0].get("_id"))
+        update_condition_new = {'_id': ObjectId(f"{document_id}")}
     for key, value in config.items():
         device_exist = False
         for counter, device in enumerate(devices):
@@ -47,6 +55,13 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
 
     devicesConfiguration(device_list, config_list)
 
+    values_old = {"$set": {"active": False}}
+    db_update_old = mycol.update_one(update_condition_old, values_old)
+    print(db_update_old.raw_result)
+    values_new = {"$set": {"active": True}}
+    db_update_new = mycol.update_one(update_condition_new, values_new)
+    print(db_update_new.raw_result)
+
 
 def stringToBool(string):
     string = string.lower()
@@ -63,7 +78,8 @@ def stringToBool(string):
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-id", "--config_id", dest="config_id", default=None, help="ID or date of configuration in DB")
+parser.add_argument("-id", "--config_id", dest="config_id", default=None,
+                    help="ID or date (dd/mm/YYYY HH:MM:SS) of configuration in DB")
 parser.add_argument("-sr", "--soft_rollback", dest="soft_rollback", default=True,
                     help="Delete current configs on devices and then apply from DB")
 parser.add_argument("-dc", "--del_configs", dest="del_configs", default=False,
