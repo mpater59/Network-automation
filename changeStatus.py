@@ -57,7 +57,7 @@ def stringToBool(string):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-ct", "--change_type", dest="change_type",
-                    help='Define what parameter will be changed in DB ("active" or "status"')
+                    help='Define what parameter will be changed in DB ("active" or "status")')
 parser.add_argument("-s", "--status", dest="status", default=None,
                     help="Define status that will be inserted to DB for selected configuration")
 parser.add_argument("-id", "--config_id", dest="config_id", default=None,
