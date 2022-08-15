@@ -11,6 +11,7 @@ myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
+
 def configRollback(config_id=None, soft_rollback=True, del_configs=False):
     config_list = []
     device_list = []
@@ -21,8 +22,9 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
     for counter, device in enumerate(devices_temp):
         devices.append(device)
 
-    old_id = str(mycol.find({"active": True}, {"_id": 1}).sort("date", -1)[0].get("_id"))
-    update_condition_old = {'_id': ObjectId(f"{old_id}")}
+    if mycol.count_documents({"active": True}) > 0:
+        old_id = str(mycol.find({"active": True}, {"_id": 1}).sort("date", -1)[0].get("_id"))
+        update_condition_old = {'_id': ObjectId(f"{old_id}")}
     if config_id is not None:
         if re.search("\d+/\d+/\d+ \d+:\d+:\d+", config_id):
             date = datetime.strptime(config_id, "%d/%m/%Y %H:%M:%S")
@@ -55,9 +57,10 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
 
     devicesConfiguration(device_list, config_list)
 
-    values_old = {"$set": {"active": False}}
-    db_update_old = mycol.update_one(update_condition_old, values_old)
-    print(db_update_old.raw_result)
+    if mycol.count_documents({"active": True}) > 0:
+        values_old = {"$set": {"active": False}}
+        db_update_old = mycol.update_one(update_condition_old, values_old)
+        print(db_update_old.raw_result)
     values_new = {"$set": {"active": True}}
     db_update_new = mycol.update_one(update_condition_new, values_new)
     print(db_update_new.raw_result)
