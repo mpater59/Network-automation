@@ -32,6 +32,7 @@ def changeStatus(change_type, status=None, config_id=None):
         else:
             print("Entered wrong format of configuration ID!")
             exit()
+        new_values = {"$set": {"active": status}}
     elif change_type == "status":
         if status is None:
             status = "verified"
@@ -46,10 +47,10 @@ def changeStatus(change_type, status=None, config_id=None):
         else:
             print("Entered wrong format of configuration ID!")
             exit()
+        new_values = {"$set": {"status": status}}
     else:
         print("Entered wrong first parameter!")
         exit()
-    new_values = {"$set": {"status": status}}
     db_update = mycol.update_one(update_condition, new_values)
     print(db_update.raw_result)
 
