@@ -6,6 +6,7 @@ import paramiko
 import yaml
 from netmiko import ConnectHandler
 import pymongo
+from bson import ObjectId
 
 from Update_database.ospf import updateOSPF
 from Update_database.interfaces import updateInterfaces
@@ -76,6 +77,8 @@ dbPush = mycol.insert_one(configurationList)
 print(dbPush.inserted_id)
 """
 
+config_id = ObjectId()
+
 for counter, device in enumerate(deviceConnection):
     for trial in range(3):
         try:
@@ -84,6 +87,7 @@ for counter, device in enumerate(deviceConnection):
             configurationList["status"] = "unverified"
             configurationList["active"] = True
             configurationList["update date"] = None
+            configurationList["config id"] = config_id
             configurationList["device type"] = devices[counter].get("device type")
             configurationList["site"] = devices[counter].get("site")
             configurationList["configuration"] = {}
@@ -113,7 +117,7 @@ for counter, device in enumerate(deviceConnection):
                         query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
                                  "site": devices[counter].get("site"), "_id": {"$ne": old_config["_id"]}}
                         dbUpdate1 = mycol.update_many(query, newValues)
-                        newValues = {"$set": {"update date": configurationList["update date"]}}
+                        newValues = {"$set": {"update date": configurationList["update date"], "config id": config_id}}
                         query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
                                  "site": devices[counter].get("site")}
                         dbUpdate2 = mycol.update_many(query, newValues)
