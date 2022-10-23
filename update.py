@@ -16,11 +16,13 @@ from Update_database.vlanBridgeVxlan import updateBridge
 from Update_database.vlanBridgeVxlan import updateVxLAN
 from Update_database.other import updateHostname
 
+from other import key_exists
+
 myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
-stream = open("knownDevices.yaml", 'r')
+stream = open("devices.yaml", 'r')
 devicesTemp = yaml.load_all(stream, Loader=yaml.SafeLoader)
 devices = []
 
@@ -44,13 +46,13 @@ for counter, device in enumerate(devices):
         "verbose": True
     })
 
-
+"""
 configurationList = {}
 configurationList["date"] = datetime.datetime.now().replace(microsecond=0)
 configurationList["status"] = "unverified"
 configurationList["active"] = True
 configurationList["devices"] = {}
-"""
+
 text_file = open("test_configuration2", "r")
 output = text_file.read()
 text_file.close()
@@ -77,22 +79,51 @@ print(dbPush.inserted_id)
 for counter, device in enumerate(deviceConnection):
     for trial in range(3):
         try:
+            configurationList = {}
+            configurationList["creation date"] = datetime.datetime.now().replace(microsecond=0)
+            configurationList["status"] = "unverified"
+            configurationList["active"] = True
+            configurationList["update date"] = None
+            configurationList["device type"] = devices[counter].get("device type")
+            configurationList["site"] = devices[counter].get("site")
+
             connection = ConnectHandler(**device)
             output = connection.send_command("net show configuration")
             print(output)
             outputList = output.splitlines()
-            configurationList["devices"][f"device {counter + 1}"] = {}
-            configurationList["devices"][f"device {counter + 1}"]["device type"] = devices[counter].get("device type")
-            configurationList["devices"][f"device {counter + 1}"].update(updateHostname(outputList))
-            configurationList["devices"][f"device {counter + 1}"].update(updateInterfaces(outputList))
-            configurationList["devices"][f"device {counter + 1}"].update(updateLoopback(outputList))
-            configurationList["devices"][f"device {counter + 1}"].update(updateOSPF(outputList))
-            configurationList["devices"][f"device {counter + 1}"].update(updateBGP(outputList))
-            configurationList["devices"][f"device {counter + 1}"].update(updateVLAN(outputList))
-            configurationList["devices"][f"device {counter + 1}"].update(updateBridge(outputList))
-            configurationList["devices"][f"device {counter + 1}"].update(updateVxLAN(outputList))
-            configurationList["devices"][f"device {counter + 1}"]["commit"] = True
+            configurationList["configuration"].update(updateHostname(outputList))
+            configurationList["configuration"].update(updateInterfaces(outputList))
+            configurationList["configuration"].update(updateLoopback(outputList))
+            configurationList["configuration"].update(updateOSPF(outputList))
+            configurationList["configuration"].update(updateBGP(outputList))
+            configurationList["configuration"].update(updateVLAN(outputList))
+            configurationList["configuration"].update(updateBridge(outputList))
+            configurationList["configuration"].update(updateVxLAN(outputList))
+            configurationList["configuration"]["commit"] = True
             connection.disconnect()
+
+            query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
+                     "site": devices[counter].get("site")}
+            newValues = {"$set": {"active": False}}
+            if mycol.find(query).count() > 0:
+                old_config = mycol.find(query).sort({"update date": -1, "creation date": -1})[0]
+                if key_exists(old_config, "configuration"):
+                    if old_config["configuration"] == configurationList["configuration"]:
+                        query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
+                                 "site": devices[counter].get("site"), "_id": {"$ne": old_config["_id"]}}
+                        dbUpdate1 = mycol.update_many(query, newValues)
+                        newValues = {"$set": {"update date": configurationList["update date"]}}
+                        query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
+                                 "site": devices[counter].get("site")}
+                        dbUpdate2 = mycol.update_many(query, newValues)
+                    else:
+                        dbUpdate = mycol.update_many(query, newValues)
+                else:
+                    dbUpdate = mycol.update_many(query, newValues)
+
+            dbInsert = mycol.insert_one(configurationList)
+            print(f"New ID: " + str(dbInsert.inserted_id))
+
             break
         except paramiko.buffered_pipe.PipeTimeout:
             print(f"Timeout - {trial + 1}.")
@@ -100,13 +131,3 @@ for counter, device in enumerate(deviceConnection):
             print(f"Timeout - {trial + 1}.")
         except netmiko.ssh_exception.NetmikoTimeoutException:
             print(f"Timeout - {trial + 1}.")
-
-for key, value in configurationList.items():
-    print(key + " : " + str(value))
-
-queryActive = {"active": True}
-newValues = {"$set": {"active": False}}
-dbUpdate = mycol.update_many(queryActive, newValues)
-
-dbInsert = mycol.insert_one(configurationList)
-print(f"New ID: " + str(dbInsert.inserted_id))
