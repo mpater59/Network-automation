@@ -117,7 +117,7 @@ for counter, device in enumerate(deviceConnection):
                         query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
                                  "site": devices[counter].get("site"), "_id": {"$ne": old_config["_id"]}}
                         dbUpdate1 = mycol.update_many(query, newValues)
-                        newValues = {"$set": {"update date": configurationList["update date"], "config id": config_id}}
+                        newValues = {"$set": {"update date": configurationList["update date"]}}
                         query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
                                  "site": devices[counter].get("site")}
                         dbUpdate2 = mycol.update_many(query, newValues)
