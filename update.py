@@ -86,6 +86,7 @@ for counter, device in enumerate(deviceConnection):
             configurationList["update date"] = None
             configurationList["device type"] = devices[counter].get("device type")
             configurationList["site"] = devices[counter].get("site")
+            configurationList["configuration"] = {}
 
             connection = ConnectHandler(**device)
             output = connection.send_command("net show configuration")
