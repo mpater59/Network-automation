@@ -106,7 +106,7 @@ for counter, device in enumerate(deviceConnection):
             query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
                      "site": devices[counter].get("site")}
             newValues = {"$set": {"active": False}}
-            if mycol.find(query).count() > 0:
+            if mycol.count_documents(query) > 0:
                 old_config = mycol.find(query).sort({"update date": -1, "creation date": -1})[0]
                 if key_exists(old_config, "configuration"):
                     if old_config["configuration"] == configurationList["configuration"]:
