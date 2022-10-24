@@ -42,11 +42,13 @@ def updateBGP(configuration):
                         elif re.search("^    advertise-all-vni", configuration[i + iter_skip]):
                             bgp["bgp"]["advertise-all-vni"] = True
                         iter_skip += 1
-                        if not re.search("^    .*", configuration[i + iter_skip]):
-                            if configuration[i + iter_skip] != '':
+                        if not re.search("^    .+", configuration[i + iter_skip]):
+                            if configuration[i + iter_skip] != '' or configuration[i + iter_skip] is None:
+                                iter_skip -= 1
                                 break
                 elif re.search("address-family ipv4 unicast", configuration[i + iter_skip]):
                     while True:
+                        config_line3 = configuration[i + iter_skip]
                         if re.search("^    neighbor \S+ route-reflector-client", configuration[i + iter_skip]):
                             neighbor = configuration[i + iter_skip].split(" ")[5]
                             if bgp.get("bgp").get("neighbors").get(neighbor) is None:
@@ -55,6 +57,7 @@ def updateBGP(configuration):
                         iter_skip += 1
                         if not re.search("^    .*", configuration[i + iter_skip]):
                             if configuration[i + iter_skip] != '':
+                                iter_skip -= 1
                                 break
                 iter_skip += 1
                 if not re.search("^  .*", configuration[i + iter_skip]):

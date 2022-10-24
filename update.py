@@ -84,7 +84,8 @@ for counter, device in enumerate(deviceConnection):
     for trial in range(3):
         try:
             configurationList = {}
-            configurationList["creation date"] = datetime.datetime.now().replace(microsecond=0)
+            creation_time = datetime.datetime.now().replace(microsecond=0)
+            configurationList["creation date"] = creation_time
             configurationList["update date"] = None
             configurationList["config id"] = config_id
             configurationList["config update time"] = config_time
@@ -98,6 +99,7 @@ for counter, device in enumerate(deviceConnection):
             output = connection.send_command("net show configuration")
             print(output)
             outputList = output.splitlines()
+
             configurationList["configuration"].update(updateHostname(outputList))
             configurationList["configuration"].update(updateInterfaces(outputList))
             configurationList["configuration"].update(updateLoopback(outputList))
@@ -109,21 +111,22 @@ for counter, device in enumerate(deviceConnection):
             configurationList["configuration"]["commit"] = True
             connection.disconnect()
 
-            query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
+            query = {"active": True, "configuration.hostname": devices[counter].get("hostname"),
                      "site": devices[counter].get("site")}
             newValues = {"$set": {"active": False}}
             if mycol.count_documents(query) > 0:
-                old_config = mycol.find(query).sort({"update date": -1, "creation date": -1})[0]
+                old_config = mycol.find(query).sort([("config update time", -1), ("creation date", -1)])[0]
                 if key_exists(old_config, "configuration"):
                     if old_config["configuration"] == configurationList["configuration"]:
-                        query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
-                                 "site": devices[counter].get("site"), "_id": {"$ne": old_config["_id"]}}
+                        query = {"active": True, "configuration.hostname": devices[counter].get("hostname"),
+                                 "site": devices[counter].get("site"), "_id": {"$ne": ObjectId(old_config["_id"])}}
                         dbUpdate1 = mycol.update_many(query, newValues)
-                        newValues = {"$set": {"update date": configurationList["update date"], "config id": config_id},
-                                     "config update time": config_time}
-                        query = {"active": True, "configuration": {"hostname": devices[counter].get("hostname")},
+                        newValues = {"$set": {"update date": creation_time, "config id": config_id}}
+                        query = {"active": True, "configuration.hostname": devices[counter].get("hostname"),
                                  "site": devices[counter].get("site")}
                         dbUpdate2 = mycol.update_many(query, newValues)
+                        newValues = {"$set": {"config update time": config_time}}
+                        dbUpdate3 = mycol.update_many(query, newValues)
                     else:
                         dbUpdate = mycol.update_many(query, newValues)
                 else:
