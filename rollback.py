@@ -5,7 +5,7 @@ import argparse
 
 from datetime import datetime
 from bson import ObjectId
-from Devices_configuration.devicesConfiguration import devicesConfiguration
+from Devices_configuration.confTest import devicesConfiguration
 
 myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
 mydb = myclient["configsdb"]
@@ -16,7 +16,7 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
     config_list = []
     device_list = []
 
-    stream = open("knownDevices.yaml", 'r')
+    stream = open("devices.yaml", 'r')
     devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
     devices = []
     for counter, device in enumerate(devices_temp):
@@ -47,15 +47,13 @@ def configRollback(config_id=None, soft_rollback=True, del_configs=False):
                 device_list.append(device)
                 config_list.append(value)
                 device_exist = True
-                if soft_rollback is False:
-                    config_list[counter]["hard clear config"] = True
                 break
         if device_exist is False:
             if del_configs is True:
                 device_list.append(device)
                 config_list.append({"hard clear config": True})
 
-    devicesConfiguration(device_list, config_list)
+    devicesConfiguration(device_list, config_list, soft_rollback)
 
     if mycol.count_documents({"active": True}) > 0:
         values_old = {"$set": {"active": False}}
