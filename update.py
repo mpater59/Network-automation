@@ -114,6 +114,7 @@ for counter, device in enumerate(deviceConnection):
             query = {"active": True, "configuration.hostname": devices[counter].get("hostname"),
                      "site": devices[counter].get("site")}
             newValues = {"$set": {"active": False}}
+            modified = False
             if mycol.count_documents(query) > 0:
                 old_config = mycol.find(query).sort([("config update time", -1), ("creation date", -1)])[0]
                 if key_exists(old_config, "configuration"):
@@ -127,13 +128,15 @@ for counter, device in enumerate(deviceConnection):
                         dbUpdate2 = mycol.update_many(query, newValues)
                         newValues = {"$set": {"config update time": config_time}}
                         dbUpdate3 = mycol.update_many(query, newValues)
+                        modified = True
                     else:
                         dbUpdate = mycol.update_many(query, newValues)
                 else:
                     dbUpdate = mycol.update_many(query, newValues)
-
-            dbInsert = mycol.insert_one(configurationList)
-            print(f"New ID: " + str(dbInsert.inserted_id))
+            else:
+                if modified is False:
+                    dbInsert = mycol.insert_one(configurationList)
+                    print(f"New ID: " + str(dbInsert.inserted_id))
 
             break
         except paramiko.buffered_pipe.PipeTimeout:
