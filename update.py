@@ -133,10 +133,9 @@ for counter, device in enumerate(deviceConnection):
                         dbUpdate = mycol.update_many(query, newValues)
                 else:
                     dbUpdate = mycol.update_many(query, newValues)
-            else:
-                if modified is False:
-                    dbInsert = mycol.insert_one(configurationList)
-                    print(f"New ID: " + str(dbInsert.inserted_id))
+            if modified is False:
+                dbInsert = mycol.insert_one(configurationList)
+                print(f"New ID: " + str(dbInsert.inserted_id))
 
             break
         except paramiko.buffered_pipe.PipeTimeout:
