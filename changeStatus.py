@@ -40,14 +40,14 @@ def changeStatus(change_type, status=None, config_id=None, site=None, devices=No
         selected_devices = []
         for split_device in split_devices:
             for known_device in known_devices:
-                if known_device["site"] == site and known_device["configuration"]["hostname"] == split_device:
+                if known_device["site"] == site and known_device["hostname"] == split_device:
                     selected_devices = known_device
                     break
     else:
         selected_devices = []
         for known_device in known_devices:
             if known_device["site"] == site:
-                selected_devices.append(known_device["configuration"]["hostname"])
+                selected_devices.append(known_device["hostname"])
 
     if selected_devices == []:
         print("Can't find devices in this site!")
