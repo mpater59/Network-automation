@@ -33,3 +33,16 @@ def check_if_exists(var_item, var_list):
         else:
             continue
     return False
+
+
+def stringToBool(string):
+    string = string.lower()
+    if string in ["true", "yes"]:
+        string = True
+        return string
+    elif string in ["false", "no"]:
+        string = False
+        return string
+    else:
+        print("Entered parameter is not boolean!")
+        exit()
