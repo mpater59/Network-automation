@@ -122,7 +122,7 @@ def bridge(config, db_config=None, expand=False):
                 db_vids = None
 
             for vid in vids:
-                if check_if_exists(vid, list(db_vids.keys())) is False:
+                if db_vids is not None and check_if_exists(vid, list(db_vids.keys())) is False:
                     commands.append(f"net add bridge bridge vids {vid}")
 
                 # config bridge access

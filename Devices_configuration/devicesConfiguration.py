@@ -25,7 +25,7 @@ def devicesConfiguration(devices_list, config_list, soft_rollback=True):
             active_config = True
         else:
             print("Active configuration not detected in the database!")
-            print("Using")
+            exit()
     for (counter, device), config in zip(enumerate(devices_list), config_list):
         device_connection_temp = {
             "device_type": device.get("machine type"),
