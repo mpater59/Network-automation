@@ -19,7 +19,7 @@ for device in devicesTemp:
     known_devices.append(device)
 
 
-def changeStatus(change_type, status=None, config_id=None, site=None, devices=None):
+def changeStatus(change_type="status", status=None, config_id=None, site=None, devices=None):
     if site is None:
         print("Enter name of site!")
         exit()
@@ -96,7 +96,7 @@ def changeStatus(change_type, status=None, config_id=None, site=None, devices=No
                 exit()
             new_values = {"$set": {"status": status}}
         else:
-            print("Entered wrong first parameter!")
+            print('Select parameter to change ("active" or "status")!')
             exit()
         db_update = mycol.update_one(update_condition, new_values)
         print(db_update.raw_result)
@@ -104,7 +104,7 @@ def changeStatus(change_type, status=None, config_id=None, site=None, devices=No
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-ct", "--change_type", dest="change_type",
+parser.add_argument("-ct", "--change_type", dest="change_type", default="status",
                     help='Define what parameter will be changed in DB ("active" or "status")')
 parser.add_argument("-s", "--status", dest="status", default=None,
                     help="Define status that will be inserted to DB for selected configuration")
