@@ -88,8 +88,6 @@ def devicesConfiguration(devices_list, config_list, soft_rollback=True):
     for deviceCommands in commands:
         print(deviceCommands)
 
-    exit()
-
     for counter, device in enumerate(device_connection):
         for trial in range(5):
             try:
