@@ -1,12 +1,31 @@
 import socket
 import netmiko.ssh_exception
 import paramiko.buffered_pipe
+import pymongo
+
 from netmiko import ConnectHandler
+import Devices_configuration.interfaces as interfaces
+from Devices_configuration.ospf import ospf as ospf
+from Devices_configuration.bgp import bgp as bgp
+from Devices_configuration.vlanBridgeVxlan import vlan as vlan
+from Devices_configuration.vlanBridgeVxlan import bridge as bridge
+from Devices_configuration.vlanBridgeVxlan import vxlan as vxlan
+
+myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
+mydb = myclient["configsdb"]
+mycol = mydb["configurations"]
 
 
-def devicesConfiguration(devices_list, config_list):
+def devicesConfiguration(devices_list, config_list, soft_rollback=True):
     device_connection = []
     commands = []
+    active_config = False
+    if soft_rollback is True:
+        if mycol.count_documents({"active": True}) > 0:
+            active_config = True
+        else:
+            print("Active configuration not detected in the database!")
+            print("Using")
     for (counter, device), config in zip(enumerate(devices_list), config_list):
         device_connection_temp = {
             "device_type": device.get("machine type"),
@@ -19,114 +38,48 @@ def devicesConfiguration(devices_list, config_list):
         }
         device_connection.append(device_connection_temp)
         commands_temp = []
+        db_config = None
+        unknown_device = True
+        if active_config is True:
+            db_config_list = list(mycol.find({"active": True}).sort("date", -1)[0].get("devices").values())
+            for config_list in db_config_list:
+                if config.get("hostname") == config_list.get("hostname"):
+                    db_config = config_list
+                    unknown_device = False
+                    break
+            if unknown_device is True:
+                print("Detected new device! Check if hostnames for all devices are correct")
+                exit()
+
         # Commands for Cumulus VX virtual machines
+        expand = False
         # hard configuration reset
-        if config.get("hard clear config") is True:
+        if active_config is False or config.get("hard clear config"):
             commands_temp.append("net del all")
         # hostname configuration
         if config.get("hostname"):
             commands_temp.append(f"net add hostname {config.get('hostname')}")
         # interfaces configuration
-        if config.get("interfaces"):
-            for interface in config.get("interfaces"):
-                if config.get("interfaces").get(interface).get("ip address"):
-                    for ipAddr in config.get("interfaces").get(interface).get("ip address"):
-                        if ipAddr:
-                            commands_temp.append(f"net add interface {interface} ip address {ipAddr}")
-                if config.get("interfaces").get(interface).get("shutdown"):
-                    commands_temp.append(f"net add interface {interface} link down")
-                elif not config.get("interfaces").get(interface).get("shutdown"):
-                    commands_temp.append(f"net del interface {interface} link down")
+        for command_cli in interfaces.interfaces(config, db_config, expand):
+            commands_temp.append(command_cli)
         # loopback configuration
-        if config.get("loopback"):
-            if config.get("loopback").get("ip address"):
-                for ipAddr in config.get("loopback").get("ip address"):
-                    commands_temp.append(f"net add loopback lo ip address {ipAddr}")
+        for command_cli in interfaces.loopback(config, db_config, expand):
+            commands_temp.append(command_cli)
         # ospf configuration
-        if config.get("ospf"):
-            commands_temp.append("net add ospf")
-            if config.get("ospf").get("router-id"):
-                commands_temp.append(f"net add ospf router-id {config.get('ospf').get('router-id')}")
-            if config.get("ospf").get("interfaces"):
-                for interface in config.get("ospf").get("interfaces"):
-                    if interface == "lo":
-                        if config.get("ospf").get("interfaces").get(interface).get("area"):
-                            area = config.get("ospf").get("interfaces").get(interface).get("area")
-                            commands_temp.append(f"net add loopback {interface} ospf area {area}")
-                        if config.get("ospf").get("interfaces").get(interface).get("passive interface"):
-                            commands_temp.append(f"net add loopback {interface} ospf passive")
-                        if config.get("ospf").get("interfaces").get(interface).get("passive interface ipv6"):
-                            commands_temp.append(f"net add loopback {interface} ospf6 passive")
-                        continue
-                    if config.get("ospf").get("interfaces").get(interface).get("area"):
-                        area = config.get("ospf").get("interfaces").get(interface).get("area")
-                        commands_temp.append(f"net add interface {interface} ospf area {area}")
-                    if config.get("ospf").get("interfaces").get(interface).get("passive interface"):
-                        commands_temp.append(f"net add interface {interface} ospf passive")
-                    if config.get("ospf").get("interfaces").get(interface).get("passive interface ipv6"):
-                        commands_temp.append(f"net add interface {interface} ospf6 passive")
-                    if config.get("ospf").get("interfaces").get(interface).get("network"):
-                        commands_temp.append(f'net add interface {interface} ospf network \
-    {config.get("ospf").get("interfaces").get(interface).get("network")}')
+        for command_cli in ospf(config, db_config, expand):
+            commands_temp.append(command_cli)
         # bgp configuration
-        if config.get("bgp"):
-            if config.get("bgp").get("as"):
-                commands_temp.append(f'net add bgp autonomous-system {config.get("bgp").get("as")}')
-                if config.get("bgp").get("router-id"):
-                    commands_temp.append(f'net add bgp router-id {config.get("bgp").get("router-id")}')
-                if config.get("bgp").get("neighbors"):
-                    for neighbor in config.get("bgp").get("neighbors"):
-                        if config.get("bgp").get("neighbors").get(neighbor).get("remote"):
-                            commands_temp.append(f'net add bgp neighbor {neighbor} remote-as \
-    {config.get("bgp").get("neighbors").get(neighbor).get("remote")}')
-                        if config.get("bgp").get("neighbors").get(neighbor).get("update"):
-                            commands_temp.append(f'net add bgp neighbor {neighbor} update-source \
-    {config.get("bgp").get("neighbors").get(neighbor).get("update")}')
-                        if config.get("bgp").get("neighbors").get(neighbor).get("activate evpn"):
-                            commands_temp.append(f"net add bgp l2vpn evpn neighbor {neighbor} activate")
-                        if config.get("bgp").get("neighbors").get(neighbor).get("rrc"):
-                            commands_temp.append(f"net add bgp neighbor {neighbor} route-reflector-client")
-                        if config.get("bgp").get("neighbors").get(neighbor).get("evpn rrc"):
-                            commands_temp.append(f"net add bgp l2vpn evpn neighbor {neighbor} route-reflector-client")
-                if config.get("bgp").get("advertise-all-vni"):
-                    commands_temp.append("net add bgp l2vpn evpn advertise-all-vni")
+        for command_cli in bgp(config, db_config, expand):
+            commands_temp.append(command_cli)
         # vlan configuration
-        if config.get("vlan"):
-            for vlan in config.get("vlan"):
-                if config.get("vlan").get(vlan).get("ip address"):
-                    for ipAddr in config.get("vlan").get(vlan).get("ip address"):
-                        commands_temp.append(f"net add vlan {vlan} ip address {ipAddr}")
+        for command_cli in vlan(config, db_config, expand):
+            commands_temp.append(command_cli)
         # bridge configuration
-        if config.get("bridge"):
-            if config.get("bridge").get("ports"):
-                for port in config.get("bridge").get("ports"):
-                    commands_temp.append(f"net add bridge bridge ports {port}")
-            if config.get("bridge").get("vids"):
-                for vid in config.get("bridge").get("vids"):
-                    commands_temp.append(f"net add bridge bridge vids {vid}")
-                    if config.get("bridge").get("vids").get(vid).get("bridge access"):
-                        for interface in config.get("bridge").get("vids").get(vid).get("bridge access"):
-                            commands_temp.append(f"net add interface {interface} bridge access {vid}")
+        for command_cli in bridge(config, db_config, expand):
+            commands_temp.append(command_cli)
         # vxlan configuration
-        if config.get("vxlan"):
-            if config.get("vxlan").get("vnis"):
-                for vni in config.get("vxlan").get("vnis"):
-                    if config.get("vxlan").get("vnis").get(vni).get("id"):
-                        commands_temp.append(
-                            f'net add vxlan {vni} vxlan id {config.get("vxlan").get("vnis").get(vni).get("id")}')
-                    if config.get("vxlan").get("vnis").get(vni).get("bridge access"):
-                        commands_temp.append(
-                            f'net add vxlan {vni} bridge access {config.get("vxlan").get("vnis").get(vni).get("bridge access")}')
-                    if config.get("vxlan").get("vnis").get(vni).get("bridge learning"):
-                        commands_temp.append(f"net del vxlan {vni} bridge learning off")
-                    else:
-                        commands_temp.append(f"net add vxlan {vni} bridge learning off")
-                    if config.get("vxlan").get("vnis").get(vni).get("local-tunnelip"):
-                        commands_temp.append(f'net add vxlan {vni} vxlan local-tunnelip \
-    {config.get("vxlan").get("vnis").get(vni).get("local-tunnelip")}')
-                    if config.get("vxlan").get("vnis").get(vni).get("remoteip"):
-                        for remoteip in config.get("vxlan").get("vnis").get(vni).get("remoteip"):
-                            commands_temp.append(f'net add vxlan {vni} vxlan remoteip {remoteip}')
+        for command_cli in vxlan(config, db_config, expand):
+            commands_temp.append(command_cli)
         # ending configuration
         if config.get("commit"):
             commands_temp.append("net commit")
@@ -134,6 +87,8 @@ def devicesConfiguration(devices_list, config_list):
 
     for deviceCommands in commands:
         print(deviceCommands)
+
+    exit()
 
     for counter, device in enumerate(device_connection):
         for trial in range(5):
