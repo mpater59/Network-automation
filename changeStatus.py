@@ -1,9 +1,5 @@
 import pymongo
-import re
 import argparse
-
-from datetime import datetime
-
 import yaml
 from bson import ObjectId
 
@@ -54,6 +50,9 @@ def changeStatus(change_type="status", status=None, config_id=None, site=None, d
         exit()
 
     for selected_device in selected_devices:
+        update_condition = None
+        new_values = None
+        config_id = None
         if change_type == "active":
             if status is None:
                 status = True
@@ -68,32 +67,17 @@ def changeStatus(change_type="status", status=None, config_id=None, site=None, d
                 query = {"active": True, "site": site, "configuration.hostname": selected_device}
                 config_id = str(mycol.find(query, {"_id": 1}).sort([("config update time", -1),
                                                                     ("creation date", -1)])[0].get("_id"))
-            if re.search("\d+/\d+/\d+ \d+:\d+:\d+", config_id):
-                date = datetime.strptime(config_id, "%d/%m/%Y %H:%M:%S")
-                config_id = date
-                update_condition = {"creation date": config_id}
-            elif re.search("^[0-9a-f]{24}$", config_id):
                 update_condition = {'_id': ObjectId(f"{config_id}")}
-            else:
-                print("Entered wrong format of configuration ID!")
-                exit()
             new_values = {"$set": {"active": status}}
         elif change_type == "status":
             if status is None:
                 status = "verified"
             if config_id is None:
                 query = {"active": True, "site": site, "configuration.hostname": selected_device}
-                config_id = str(mycol.find(query, {"_id": 1}).sort([("config update time", -1),
-                                                                    ("creation date", -1)])[0].get("_id"))
-            if re.search("\d+/\d+/\d+ \d+:\d+:\d+", config_id):
-                date = datetime.strptime(config_id, "%d/%m/%Y %H:%M:%S")
-                config_id = date
-                update_condition = {"creation date": config_id}
-            elif re.search("^[0-9a-f]{24}$", config_id):
-                update_condition = {'_id': ObjectId(f"{config_id}")}
-            else:
-                print("Entered wrong format of configuration ID!")
-                exit()
+                config_id = ObjectId(str(mycol.find(query, {"_id": 1}).sort([("config update time", -1),
+                                                                    ("creation date", -1)])[0].get("_id")))
+                print(config_id)
+                update_condition = {'_id': config_id}
             new_values = {"$set": {"status": status}}
         else:
             print('Select parameter to change ("active" or "status")!')
@@ -108,12 +92,10 @@ parser.add_argument("-ct", "--change_type", dest="change_type", default="status"
                     help='Define what parameter will be changed in DB ("active" or "status")')
 parser.add_argument("-s", "--status", dest="status", default=None,
                     help="Define status that will be inserted to DB for selected configuration")
-parser.add_argument("-id", "--config_id", dest="config_id", default=None,
-                    help="ID or creation date (dd/mm/YYYY HH:MM:SS) of configuration in DB")
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
 parser.add_argument("-d", "--device", dest="device", default=None,
                     help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
 
 args = parser.parse_args()
 
-changeStatus(args.change_type, args.status, args.config_id, args.site, args.device)
+changeStatus(args.change_type, args.status, args.site, args.device)

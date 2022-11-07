@@ -19,7 +19,7 @@ from Update_database.other import updateHostname
 
 from other import key_exists
 
-myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
+myclient = pymongo.MongoClient("mongodb://192.168.1.11:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
