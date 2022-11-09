@@ -11,7 +11,7 @@ from Devices_configuration.vlanBridgeVxlan import vlan as vlan
 from Devices_configuration.vlanBridgeVxlan import bridge as bridge
 from Devices_configuration.vlanBridgeVxlan import vxlan as vxlan
 
-myclient = pymongo.MongoClient("mongodb://192.168.1.21:9000/")
+myclient = pymongo.MongoClient("mongodb://192.168.1.11:9000/")
 mydb = myclient["configsdb"]
 mycol = mydb["configurations"]
 
