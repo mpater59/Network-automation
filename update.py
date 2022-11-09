@@ -88,7 +88,7 @@ for counter, device in enumerate(deviceConnection):
             configurationList["creation date"] = creation_time
             configurationList["update date"] = None
             configurationList["config id"] = config_id
-            configurationList["config update time"] = config_time
+            configurationList["config update date"] = config_time
             configurationList["device type"] = devices[counter].get("device type")
             configurationList["site"] = devices[counter].get("site")
             configurationList["status"] = "unverified"
@@ -116,7 +116,7 @@ for counter, device in enumerate(deviceConnection):
             newValues = {"$set": {"active": False}}
             modified = False
             if mycol.count_documents(query) > 0:
-                old_config = mycol.find(query).sort([("config update time", -1), ("creation date", -1)])[0]
+                old_config = mycol.find(query).sort([("config update date", -1), ("creation date", -1)])[0]
                 if key_exists(old_config, "configuration"):
                     if old_config["configuration"] == configurationList["configuration"]:
                         query = {"active": True, "configuration.hostname": devices[counter].get("hostname"),
@@ -126,7 +126,7 @@ for counter, device in enumerate(deviceConnection):
                         query = {"active": True, "configuration.hostname": devices[counter].get("hostname"),
                                  "site": devices[counter].get("site")}
                         dbUpdate2 = mycol.update_many(query, newValues)
-                        newValues = {"$set": {"config update time": config_time}}
+                        newValues = {"$set": {"config update date": config_time}}
                         dbUpdate3 = mycol.update_many(query, newValues)
                         modified = True
                     else:

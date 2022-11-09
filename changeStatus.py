@@ -1,7 +1,9 @@
+import re
 import pymongo
 import argparse
 import yaml
 from bson import ObjectId
+from datetime import datetime
 
 myclient = pymongo.MongoClient("mongodb://192.168.1.11:9000/")
 mydb = myclient["configsdb"]
@@ -15,7 +17,7 @@ for device in devicesTemp:
     known_devices.append(device)
 
 
-def changeStatus(change_type="status", status=None, config_id=None, site=None, devices=None):
+def changeStatus(change_type="status", status=None, config_id=None, config_update_date=None, site=None, devices=None):
     if site is None:
         print("Enter name of site!")
         exit()
@@ -52,7 +54,6 @@ def changeStatus(change_type="status", status=None, config_id=None, site=None, d
     for selected_device in selected_devices:
         update_condition = None
         new_values = None
-        config_id = None
         if change_type == "active":
             if status is None:
                 status = True
@@ -65,20 +66,43 @@ def changeStatus(change_type="status", status=None, config_id=None, site=None, d
                 exit()
             if config_id is None:
                 query = {"active": True, "site": site, "configuration.hostname": selected_device}
-                config_id = str(mycol.find(query, {"_id": 1}).sort([("config update time", -1),
-                                                                    ("creation date", -1)])[0].get("_id"))
-                update_condition = {'_id': ObjectId(f"{config_id}")}
+                conf_id = str(mycol.find(query, {"_id": 1}).sort("config update time", -1)[0].get("_id"))
+                update_condition = {'_id': ObjectId(f"{conf_id}")}
+            elif config_id is not None:
+                if re.search("^[0-9a-f]{24}$", config_id):
+                    update_condition = {'_id': ObjectId(f"{config_id}")}
+                else:
+                    print("Entered wrong format of configuration set ID!")
+                    exit()
+            elif config_update_date is not None:
+                if re.search("\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}", config_update_date):
+                    date = datetime.strptime(config_update_date, "%d/%m/%Y %H:%M:%S")
+                    update_condition = {"config update time": date}
+                else:
+                    print("Entered wrong format of configuration update date, enter dd/mm/YYYY HH:MM:SS!")
+                    exit()
             new_values = {"$set": {"active": status}}
         elif change_type == "status":
             if status is None:
-                status = "verified"
+                status = "stable"
             if config_id is None:
                 query = {"active": True, "site": site, "configuration.hostname": selected_device}
-                config_id = ObjectId(str(mycol.find(query, {"_id": 1}).sort([("config update time", -1),
-                                                                    ("creation date", -1)])[0].get("_id")))
-                print(config_id)
-                update_condition = {'_id': config_id}
-            new_values = {"$set": {"status": status}}
+                conf_id = str(mycol.find(query, {"_id": 1}).sort("config update date", -1)[0].get("_id"))
+                update_condition = {'_id': ObjectId(f"{conf_id}")}
+            elif config_id is not None:
+                if re.search("^[0-9a-f]{24}$", config_id):
+                    update_condition = {'_id': ObjectId(f"{config_id}")}
+                else:
+                    print("Entered wrong format of configuration set ID!")
+                    exit()
+            elif config_update_date is not None:
+                if re.search("\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}", config_update_date):
+                    date = datetime.strptime(config_update_date, "%d/%m/%Y %H:%M:%S")
+                    update_condition = {"config update time": date}
+                else:
+                    print("Entered wrong format of configuration update date, enter dd/mm/YYYY HH:MM:SS!")
+                    exit()
+            new_values = {"$set": {"status": ObjectId(f"{config_id}")}}
         else:
             print('Select parameter to change ("active" or "status")!')
             exit()
@@ -89,9 +113,13 @@ def changeStatus(change_type="status", status=None, config_id=None, site=None, d
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-ct", "--change_type", dest="change_type", default="status",
-                    help='Define what parameter will be changed in DB ("active" or "status")')
+                    help='Define what parameter will be changed in DB ("active" or "status"); Default "status"')
 parser.add_argument("-s", "--status", dest="status", default=None,
                     help="Define status that will be inserted to DB for selected configuration")
+parser.add_argument("-id", "--config_id", dest="config_id", default=None,
+                    help="ID of configuration set in DB (optional)")
+parser.add_argument("-dt", "--datetime", dest="config_update_date", default=None,
+                    help="Datetime of configuration set in DB (optional)")
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
 parser.add_argument("-d", "--device", dest="device", default=None,
                     help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
