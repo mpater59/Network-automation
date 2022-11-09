@@ -70,7 +70,9 @@ def changeStatus(change_type="status", status=None, config_id=None, config_updat
                 update_condition = {'_id': ObjectId(f"{conf_id}")}
             elif config_id is not None:
                 if re.search("^[0-9a-f]{24}$", config_id):
-                    update_condition = {'_id': ObjectId(f"{config_id}")}
+                    query = {'config id': ObjectId(f"{config_id}"), "site": site, "configuration.hostname": selected_device}
+                    conf_id = str(mycol.find_one(query, {"_id": 1}).get("_id"))
+                    update_condition = {'_id': ObjectId(f"{conf_id}")}
                 else:
                     print("Entered wrong format of configuration set ID!")
                     exit()
@@ -91,14 +93,18 @@ def changeStatus(change_type="status", status=None, config_id=None, config_updat
                 update_condition = {'_id': ObjectId(f"{conf_id}")}
             elif config_id is not None:
                 if re.search("^[0-9a-f]{24}$", config_id):
-                    update_condition = {'_id': ObjectId(f"{config_id}")}
+                    query = {'config id': ObjectId(f"{config_id}"), "site": site, "configuration.hostname": selected_device}
+                    conf_id = str(mycol.find_one(query, {"_id": 1}).get("_id"))
+                    update_condition = {'_id': ObjectId(f"{conf_id}")}
                 else:
                     print("Entered wrong format of configuration set ID!")
                     exit()
             elif config_update_date is not None:
                 if re.search("\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}", config_update_date):
                     date = datetime.strptime(config_update_date, "%d/%m/%Y %H:%M:%S")
-                    update_condition = {"config update time": date}
+                    query = {"site": site, "configuration.hostname": selected_device, "config update date": date}
+                    conf_id = str(mycol.find_one(query, {"_id": 1}).get("_id"))
+                    update_condition = {'_id': ObjectId(f"{conf_id}")}
                 else:
                     print("Entered wrong format of configuration update date, enter dd/mm/YYYY HH:MM:SS!")
                     exit()
