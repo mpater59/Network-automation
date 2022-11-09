@@ -65,7 +65,6 @@ def changeStatus(status=None, config_id=None, config_update_date=None, site=None
                     query = {"site": site, "configuration.hostname": known_device["hostname"], "active": True}
                     if mycol.count_documents(query) > 0:
                         selected_devices.append(known_device["hostname"])
-                break
 
     if selected_devices == []:
         print("Can't find devices in this site!")
