@@ -114,7 +114,7 @@ def changeStatus(status=None, config_id=None, config_update_date=None, site=None
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-t", "--status_text", dest="status", default=None,
+parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Define status that will be inserted to DB for selected configuration")
 parser.add_argument("-id", "--config_id", dest="config_id", default=None,
                     help="ID of configuration set in DB (optional)")
@@ -128,4 +128,4 @@ parser.add_argument("-oa", "--only_active", dest="active", default=False, action
 
 args = parser.parse_args()
 
-changeStatus(args.status, args.config_id, args.config_update_date, args.site, args.device, args.active)
+changeStatus(args.status_text, args.config_id, args.config_update_date, args.site, args.device, args.active)
