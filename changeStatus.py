@@ -102,7 +102,7 @@ def changeStatus(change_type="status", status=None, config_id=None, config_updat
                 else:
                     print("Entered wrong format of configuration update date, enter dd/mm/YYYY HH:MM:SS!")
                     exit()
-            new_values = {"$set": {"status": ObjectId(f"{config_id}")}}
+            new_values = {"$set": {"status": status}}
         else:
             print('Select parameter to change ("active" or "status")!')
             exit()
