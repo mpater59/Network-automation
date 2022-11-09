@@ -126,4 +126,4 @@ parser.add_argument("-d", "--device", dest="device", default=None,
 
 args = parser.parse_args()
 
-changeStatus(args.change_type, args.status, args.site, args.device)
+changeStatus(args.change_type, args.status, args.config_id, args.config_update_date, args.site, args.device)
