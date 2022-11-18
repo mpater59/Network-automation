@@ -3,15 +3,15 @@ import netmiko.ssh_exception
 import paramiko.buffered_pipe
 import pymongo
 import yaml
-import os
 
 from netmiko import ConnectHandler
 import Devices_configuration.interfaces as interfaces
-from Devices_configuration.ospf import ospf as ospf
-from Devices_configuration.bgp import bgp as bgp
-from Devices_configuration.vlanBridgeVxlan import vlan as vlan
-from Devices_configuration.vlanBridgeVxlan import bridge as bridge
-from Devices_configuration.vlanBridgeVxlan import vxlan as vxlan
+from Devices_configuration.ospf import ospf
+from Devices_configuration.bgp import bgp
+from Devices_configuration.vlanBridgeVxlan import vlan
+from Devices_configuration.vlanBridgeVxlan import bridge
+from Devices_configuration.vlanBridgeVxlan import vxlan
+from Devices_configuration.other_conf import hostname
 
 
 stream = open('database_env.yaml', 'r')
@@ -67,13 +67,14 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
         else:
             print(f"Couldn't find active configuration for {device} in DB!")
 
+    apply_config = True
     # Commands for Cumulus VX virtual machines
     # hard configuration reset
     if active_config is False and expand is False:
         commands.append("net del all")
     # hostname configuration
-    if config.get("hostname"):
-        commands.append(f"net add hostname {config.get('hostname')}")
+    for command_cli in hostname(config, db_config, expand):
+        commands.append(command_cli)
     # interfaces configuration
     for command_cli in interfaces.interfaces(config, db_config, expand):
         commands.append(command_cli)
@@ -96,20 +97,25 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
     for command_cli in vxlan(config, db_config, expand):
         commands.append(command_cli)
     # ending configuration
-    commands.append("net commit")
+    if commands != []:
+        commands.append("net commit")
+    else:
+        apply_config = False
+        print(f"Inserted configuration is the same as active configuration for device {selected_device['hostname']}!")
 
-    print(commands)
+    if apply_config is True:
+        print(commands)
 
-    for trial in range(5):
-        try:
-            connection = ConnectHandler(**device_connection)
-            output = connection.send_config_set(commands)
-            print(output)
-            connection.disconnect()
-            break
-        except paramiko.buffered_pipe.PipeTimeout:
-            print(f"Timeout - {trial + 1}")
-        except socket.timeout:
-            print(f"Timeout - {trial + 1}")
-        except netmiko.ssh_exception.NetmikoTimeoutException:
-            print(f"Timeout - {trial + 1}")
+        for trial in range(5):
+            try:
+                connection = ConnectHandler(**device_connection)
+                output = connection.send_config_set(commands)
+                print(output)
+                connection.disconnect()
+                break
+            except paramiko.buffered_pipe.PipeTimeout:
+                print(f"Timeout - {trial + 1}")
+            except socket.timeout:
+                print(f"Timeout - {trial + 1}")
+            except netmiko.ssh_exception.NetmikoTimeoutException:
+                print(f"Timeout - {trial + 1}")
