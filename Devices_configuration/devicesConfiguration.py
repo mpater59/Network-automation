@@ -14,10 +14,7 @@ from Devices_configuration.vlanBridgeVxlan import bridge as bridge
 from Devices_configuration.vlanBridgeVxlan import vxlan as vxlan
 
 
-cur_path = os.path.dirname(__file__)
-new_path = os.path.relpath('../database_env.yaml', cur_path)
-
-stream = open(new_path, 'r')
+stream = open('database_env.yaml', 'r')
 db_env = yaml.load(stream, Loader=yaml.SafeLoader)
 
 myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
