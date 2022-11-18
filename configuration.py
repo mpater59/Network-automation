@@ -36,7 +36,7 @@ def configuration(site, devices, configs_list, status=None, soft_config_change=F
     if isinstance(configs_list, str):
         yaml.add_constructor("!ObjectID:", objectid_constructor)
         stream = open(configs_list, 'r')
-        configs_temp = yaml.load_all(stream)
+        configs_temp = yaml.load_all(stream, Loader=yaml.Loader)
 
         configs = []
         for config_temp in configs_temp:
