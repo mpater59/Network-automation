@@ -105,7 +105,7 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
             else:
                 continue
         else:
-            query = {"site": site, "configuration.hostname": device, "active": True}
+            query = {"site": site, "hostname": device, "active": True}
             if col_configs.count_documents(query) > 0:
                 conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
                 get_condition = {'_id': ObjectId(f"{conf_id}")}
