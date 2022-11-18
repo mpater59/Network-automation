@@ -66,7 +66,8 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                 elif col_configs.count_documents(query2) > 0:
                     conf_id = str(col_configs.find_one(query2).get("_id"))
                 else:
-                    print(f"Couldn't find entered configuration set ID for {selected_device}!")
+                    if devices is not None:
+                        print(f"Couldn't find entered configuration set ID for {selected_device}!")
                     continue
                 document_id = {'_id': ObjectId(f"{conf_id}")}
             else:
@@ -84,7 +85,8 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                 elif col_configs.count_documents(query2) > 0:
                     conf_id = str(col_configs.find_one(query2).get("_id"))
                 else:
-                    print(f"Couldn't find entered configuration set datetime for {selected_device}!")
+                    if devices is not None:
+                        print(f"Couldn't find entered configuration set datetime for {selected_device}!")
                     continue
                 document_id = {'_id': ObjectId(f"{conf_id}")}
             else:
@@ -95,7 +97,8 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
             if col_configs.count_documents(query) > 0:
                 conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
             else:
-                print(f"Couldn't find entered status \"{status}\" for {selected_device}!")
+                if devices is not None:
+                    print(f"Couldn't find entered status \"{status}\" for {selected_device}!")
                 continue
             document_id = {'_id': ObjectId(f"{conf_id}")}
 
