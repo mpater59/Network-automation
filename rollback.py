@@ -133,4 +133,4 @@ parser.add_argument("-t", "--status_text", dest="status_text", default="stable",
 
 args = parser.parse_args()
 
-configRollback(args.config_id, args.soft_rollback)
+configRollback(args.config_id, args.soft_rollback, args.status_text, args.devices, args.site, args.config_update_date)
