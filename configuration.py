@@ -4,7 +4,7 @@ import yaml
 
 from Devices_configuration.devicesConfiguration import devicesConfiguration
 from other import check_if_exists
-from update import update
+from Update_database.updateConfigurations import update
 
 
 stream = open("database_env.yaml", 'r')
@@ -101,4 +101,4 @@ parser.add_argument("-nd", "--new_documents", dest="new_documents", default=Fals
 
 args = parser.parse_args()
 
-configuration(args.site, args.device, args.status_text, args.new_documents, args.new_documents)
+configuration(args.site, args.device, args.config_file, args.status_text, args.soft_change, args.expand, args.new_documents)
