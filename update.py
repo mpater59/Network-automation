@@ -97,7 +97,7 @@ def update(site, devices=None, status=None, new_documents=False):
                 configuration["active"] = True
                 configuration["configuration"] = {}
 
-                connection = ConnectHandler(**device)
+                connection = ConnectHandler(**device_connection)
                 output = connection.send_command("net show configuration")
                 print(output)
                 output_list = output.splitlines()
