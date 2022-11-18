@@ -7,9 +7,13 @@ from datetime import datetime
 from bson import ObjectId
 from Devices_configuration.devicesConfiguration import devicesConfiguration
 
-myclient = pymongo.MongoClient("mongodb://192.168.1.11:9000/")
-mydb = myclient["configsdb"]
-mycol = mydb["configurations"]
+
+stream = open("database_env.yaml", 'r')
+db_env = yaml.load(stream, Loader=yaml.SafeLoader)
+
+myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
+mydb = myclient[f"{db_env['DB name']}"]
+col_configs = mydb[f"{db_env['DB collection configuration']}"]
 
 
 def configRollback(config_id=None, soft_rollback=False, status="stable", devices=None, site=None,
@@ -20,7 +24,7 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
         exit()
     else:
         query = {"site": site}
-        if mycol.count_documents(query) == 0:
+        if col_configs.count_documents(query) == 0:
             print("Can't find this site in DB!")
             exit()
 
@@ -57,10 +61,10 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                           "hostname": selected_device}
                 query2 = {'config set information.archived config set id': ObjectId(f"{config_id}"), "site": site,
                           "hostname": selected_device}
-                if mycol.count_documents(query1) > 0:
-                    conf_id = str(mycol.find_one(query1).get("_id"))
-                elif mycol.count_documents(query2) > 0:
-                    conf_id = str(mycol.find_one(query2).get("_id"))
+                if col_configs.count_documents(query1) > 0:
+                    conf_id = str(col_configs.find_one(query1).get("_id"))
+                elif col_configs.count_documents(query2) > 0:
+                    conf_id = str(col_configs.find_one(query2).get("_id"))
                 else:
                     print(f"Couldn't find entered configuration set ID for {selected_device}!")
                     continue
@@ -75,10 +79,10 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                           "config set information.last config set datetime": date}
                 query2 = {"site": site, "hostname": selected_device,
                           "config set information.archived config set datetime": date}
-                if mycol.count_documents(query1) > 0:
-                    conf_id = str(mycol.find_one(query1).get("_id"))
-                elif mycol.count_documents(query2) > 0:
-                    conf_id = str(mycol.find_one(query2).get("_id"))
+                if col_configs.count_documents(query1) > 0:
+                    conf_id = str(col_configs.find_one(query1).get("_id"))
+                elif col_configs.count_documents(query2) > 0:
+                    conf_id = str(col_configs.find_one(query2).get("_id"))
                 else:
                     print(f"Couldn't find entered configuration set datetime for {selected_device}!")
                     continue
@@ -88,25 +92,25 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                 exit()
         else:
             query = {"site": site, "hostname": selected_device, "status": status}
-            if mycol.count_documents(query) > 0:
-                conf_id = str(mycol.find(query).sort("last update datetime", -1)[0].get("_id"))
+            if col_configs.count_documents(query) > 0:
+                conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
             else:
                 print(f"Couldn't find entered status \"{status}\" for {selected_device}!")
                 continue
             document_id = {'_id': ObjectId(f"{conf_id}")}
 
-        config = mycol.find_one(document_id).get("configuration")
+        config = col_configs.find_one(document_id).get("configuration")
 
         devicesConfiguration(site, selected_device, config, soft_rollback)
 
         query_old = {"active": True, "site": site, "hostname": selected_device, "_id": {"$ne": document_id['_id']}}
-        if mycol.count_documents(query_old) > 0:
+        if col_configs.count_documents(query_old) > 0:
             values_old = {"$set": {"active": False}}
-            db_update_old = mycol.update_many(query_old, values_old)
+            db_update_old = col_configs.update_many(query_old, values_old)
             print(db_update_old.raw_result)
 
         values_new = {"$set": {"active": True}}
-        db_update_new = mycol.update_one(document_id, values_new)
+        db_update_new = col_configs.update_one(document_id, values_new)
         print(db_update_new.raw_result)
 
 
