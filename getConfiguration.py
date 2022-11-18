@@ -40,15 +40,16 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
     selected_devices = []
     if devices is not None:
         split_devices = devices.split(',')
+        split_devices_temp = devices.split(',')
         for split_device in split_devices:
             for known_device in known_devices:
                 if known_device["site"] == site and known_device["hostname"] == split_device:
                     selected_devices.append(known_device["hostname"])
-                    split_devices.remove(split_device)
+                    split_devices_temp.remove(split_device)
                     break
-        if split_devices != []:
+        if split_devices_temp != []:
             print("The following devices couldn't be found on this site:")
-            for split_device in split_devices:
+            for split_device in split_devices_temp:
                 print(split_device)
     else:
         for known_device in known_devices:
@@ -56,7 +57,7 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
                 selected_devices.append(known_device["hostname"])
 
     configs = []
-
+    exit()
     for device in selected_devices:
 
         get_condition = None
