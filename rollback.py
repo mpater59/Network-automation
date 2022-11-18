@@ -104,23 +104,23 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                         print(f"Couldn't find entered configuration set datetime for {selected_device}!")
                     continue
                 document_id = {'_id': ObjectId(f"{conf_id}")}
-            elif pc_datetime is not None:
-                query1 = {"site": site, "hostname": selected_device,
-                          "config set information.last config set datetime": pc_datetime}
-                query2 = {"site": site, "hostname": selected_device,
-                          "config set information.archived config set datetime": pc_datetime}
-                if col_configs.count_documents(query1) > 0:
-                    conf_id = str(col_configs.find_one(query1).get("_id"))
-                elif col_configs.count_documents(query2) > 0:
-                    conf_id = str(col_configs.find_one(query2).get("_id"))
-                else:
-                    if devices is not None:
-                        print(f"Couldn't find previous configuration set for {selected_device}!")
-                    continue
-                document_id = {'_id': ObjectId(f"{conf_id}")}
             else:
                 print("Entered wrong format of configuration set datetime, enter dd/mm/YYYY HH:MM:SS!")
                 exit()
+        elif pc_datetime is not None:
+            query1 = {"site": site, "hostname": selected_device,
+                      "config set information.last config set datetime": pc_datetime}
+            query2 = {"site": site, "hostname": selected_device,
+                      "config set information.archived config set datetime": pc_datetime}
+            if col_configs.count_documents(query1) > 0:
+                conf_id = str(col_configs.find_one(query1).get("_id"))
+            elif col_configs.count_documents(query2) > 0:
+                conf_id = str(col_configs.find_one(query2).get("_id"))
+            else:
+                if devices is not None:
+                    print(f"Couldn't find previous configuration set for {selected_device}!")
+                continue
+            document_id = {'_id': ObjectId(f"{conf_id}")}
         else:
             query = {"site": site, "hostname": selected_device, "status": status}
             if col_configs.count_documents(query) > 0:
