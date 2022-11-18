@@ -1,9 +1,9 @@
+import argparse
 import re
 import pymongo
-import argparse
 import yaml
-from bson import ObjectId
 from datetime import datetime
+from bson import ObjectId, objectid
 
 
 stream = open("database_env.yaml", 'r')
@@ -15,7 +15,11 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
-def changeStatus(site, devices=None, status="stable", config_id=None, config_update_date=None, active=False):
+def objectid_representer(dumper, data):
+    return dumper.represent_scalar("!ObjectID:", str(data))
+
+
+def get_configuration(site, file=None, devices=None, status=None, config_id=None, config_update_date=None):
 
     if site is None:
         print("Enter name of site!")
@@ -29,14 +33,9 @@ def changeStatus(site, devices=None, status="stable", config_id=None, config_upd
     stream = open("devices.yaml", 'r')
     devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
     known_devices = []
-    for device in devices_temp:
-        known_devices.append(device)
+    for device_temp in devices_temp:
+        known_devices.append(device_temp)
     stream.close()
-
-    config_datetime = None
-    if active is False:
-        config_datetime = col_configs.find({"site": site}).sort("config set information.last config set datetime", -1)[0]\
-            .get("config set information").get("last config set datetime")
 
     selected_devices = []
     if devices is not None:
@@ -56,66 +55,94 @@ def changeStatus(site, devices=None, status="stable", config_id=None, config_upd
             if known_device["site"] == site:
                 selected_devices.append(known_device["hostname"])
 
-    for selected_device in selected_devices:
-        update_condition = None
+    configs = []
+
+    for device in selected_devices:
+
+        get_condition = None
 
         if config_id is not None:
             if re.search("^[0-9a-f]{24}$", config_id):
                 query1 = {'config set information.last config set id': ObjectId(f"{config_id}"), "site": site,
-                          "hostname": selected_device}
+                          "hostname": device}
                 query2 = {'config set information.archived config set id': ObjectId(f"{config_id}"), "site": site,
-                          "hostname": selected_device}
+                          "hostname": device}
                 if col_configs.count_documents(query1) > 0:
                     conf_id = str(col_configs.find_one(query1).get("_id"))
                 elif col_configs.count_documents(query2) > 0:
                     conf_id = str(col_configs.find_one(query2).get("_id"))
                 else:
-                    print(f"Couldn't find entered configuration set ID for {selected_device}!")
+                    print(f"Couldn't find entered configuration set ID for {device}!")
                     continue
-                update_condition = {'_id': ObjectId(f"{conf_id}")}
+                get_condition = {'_id': ObjectId(f"{conf_id}")}
             else:
                 print("Entered wrong format of configuration set ID!")
                 exit()
         elif config_update_date is not None:
             if re.search("\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}", config_update_date):
                 date = datetime.strptime(config_update_date, "%d/%m/%Y %H:%M:%S")
-                query1 = {"site": site, "hostname": selected_device,
+                query1 = {"site": site, "hostname": device,
                           "config set information.last config set datetime": date}
-                query2 = {"site": site, "hostname": selected_device,
+                query2 = {"site": site, "hostname": device,
                           "config set information.archived config set datetime": date}
                 if col_configs.count_documents(query1) > 0:
                     conf_id = str(col_configs.find_one(query1).get("_id"))
                 elif col_configs.count_documents(query2) > 0:
                     conf_id = str(col_configs.find_one(query2).get("_id"))
                 else:
-                    print(f"Couldn't find entered configuration set datetime for {selected_device}!")
+                    print(f"Couldn't find entered configuration set datetime for {device}!")
                     continue
-                update_condition = {'_id': ObjectId(f"{conf_id}")}
+                get_condition = {'_id': ObjectId(f"{conf_id}")}
             else:
                 print("Entered wrong format of configuration update datetime, enter dd/mm/YYYY HH:MM:SS!")
                 exit()
-        elif active is True:
-            query = {"active": True, "site": site, "hostname": selected_device}
-            conf_id = str(col_configs.find(query).sort("config set information.last config set datetime", -1)[0].get("_id"))
-            update_condition = {'_id': ObjectId(f"{conf_id}")}
-        else:
-            query = {"site": site, "hostname": selected_device,
-                     "config set information.last config set datetime": config_datetime}
+        elif status is not None:
+            query = {"site": site, "hostname": device, "status": status}
             if col_configs.count_documents(query) > 0:
-                conf_id = str(col_configs.find(query).sort("config set information.last config set datetime", -1)[0].get("_id"))
-                update_condition = {'_id': ObjectId(f"{conf_id}")}
+                conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
+                get_condition = {'_id': ObjectId(f"{conf_id}")}
+            else:
+                continue
+        else:
+            query = {"site": site, "configuration.hostname": device, "active": True}
+            if col_configs.count_documents(query) > 0:
+                conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
+                get_condition = {'_id': ObjectId(f"{conf_id}")}
             else:
                 continue
 
-        new_values = {"$set": {"status": status}}
-        db_update = col_configs.update_one(update_condition, new_values)
-        print(db_update.raw_result)
+        config_db = col_configs.find_one(get_condition)
+        config_db.update(config_db.pop("configuration", None))
+
+        print(config_db)
+
+        configs.append(config_db)
+
+    name_file = None
+    try:
+        if file is not None:
+            name_file = file
+            new_file = open(name_file, "x")
+        else:
+            name_file = f'{site}_'
+            for device in selected_devices:
+                name_file = name_file + device
+            name_file = name_file + '.yaml'
+            new_file = open(name_file, "x")
+    except FileExistsError:
+        print(f"File {name_file} already exist!")
+        exit()
+
+    yaml.SafeDumper.add_representer(objectid.ObjectId, objectid_representer)
+
+    with open(name_file, "a") as stream:
+        yaml.safe_dump_all(configs, stream, default_flow_style=False, sort_keys=False)
 
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-t", "--status_text", dest="status_text", default="stable",
-                    help="Text status that will be inserted to DB for selected configuration")
+parser.add_argument("-t", "--status_text", dest="status_text", default=None,
+                    help="Text status that will be inserted to DB for selected configuration (optional)")
 parser.add_argument("-id", "--config_id", dest="config_id", default=None,
                     help="ID of configuration set in DB (optional)")
 parser.add_argument("-dt", "--datetime", dest="config_update_date", default=None,
@@ -123,9 +150,9 @@ parser.add_argument("-dt", "--datetime", dest="config_update_date", default=None
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
 parser.add_argument("-d", "--device", dest="device", default=None,
                     help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
-parser.add_argument("-oa", "--only_active", dest="active", default=False, action='store_true',
-                    help="Change status only on active configuration (cannot be used with -id and -st flags)")
+parser.add_argument("-f", "--file_name", dest="file_name", default=None,
+                    help="File name where you want save configurations from DB (optional)")
 
 args = parser.parse_args()
 
-changeStatus(args.site, args.device, args.status_text, args.config_id, args.config_update_date, args.active)
+get_configuration(args.site, args.file_name, args.device, args.status_text, args.config_id, args.config_update_date)

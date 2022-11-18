@@ -27,6 +27,7 @@ db_env = yaml.load(stream, Loader=yaml.SafeLoader)
 myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
 mydb = myclient[f"{db_env['DB name']}"]
 col_configs = mydb[f"{db_env['DB collection configuration']}"]
+stream.close()
 
 
 def update(site, devices=None, status=None, new_documents=False):
@@ -55,6 +56,7 @@ def update(site, devices=None, status=None, new_documents=False):
             if check_if_exists(device_temp["hostname"], split_devices) is True:
                 selected_devices.append(device_temp)
                 split_devices.remove(device_temp["hostname"])
+    stream.close()
 
     if split_devices != []:
         print("The following devices couldn't be found on this site:")

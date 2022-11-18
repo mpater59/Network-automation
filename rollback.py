@@ -14,10 +14,11 @@ db_env = yaml.load(stream, Loader=yaml.SafeLoader)
 myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
 mydb = myclient[f"{db_env['DB name']}"]
 col_configs = mydb[f"{db_env['DB collection configuration']}"]
+stream.close()
 
 
 def configRollback(config_id=None, soft_rollback=False, status="stable", devices=None, site=None,
-                   config_update_date=None):
+                   config_update_date=None, previous_config=False):
 
     if site is None:
         print("Enter name of site!")
@@ -33,6 +34,7 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
     known_devices = []
     for counter, device in enumerate(devices_temp):
         known_devices.append(device)
+    stream.close()
 
     selected_devices = []
     if devices is not None:
@@ -51,6 +53,19 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
         for known_device in known_devices:
             if known_device["site"] == site:
                 selected_devices.append(known_device["hostname"])
+
+    pc_datetime = None
+    if previous_config is True:
+        pc_datetime = list(col_configs.aggregate([
+            {"$match": {"site": site}},
+            {"$group": {"_id":
+                            {"config set information": {"last config set datetime":
+                                 "$config set information.last config set datetime"}}}}
+            ]))
+        pc_datetime_list = []
+        for date in pc_datetime:
+            pc_datetime_list.append(date["_id"]["config set information"]["last config set datetime"])
+        pc_datetime = sorted(pc_datetime_list, reverse=True)[1]
 
     for selected_device in selected_devices:
         document_id = None
@@ -87,6 +102,20 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                 else:
                     if devices is not None:
                         print(f"Couldn't find entered configuration set datetime for {selected_device}!")
+                    continue
+                document_id = {'_id': ObjectId(f"{conf_id}")}
+            elif pc_datetime is not None:
+                query1 = {"site": site, "hostname": selected_device,
+                          "config set information.last config set datetime": pc_datetime}
+                query2 = {"site": site, "hostname": selected_device,
+                          "config set information.archived config set datetime": pc_datetime}
+                if col_configs.count_documents(query1) > 0:
+                    conf_id = str(col_configs.find_one(query1).get("_id"))
+                elif col_configs.count_documents(query2) > 0:
+                    conf_id = str(col_configs.find_one(query2).get("_id"))
+                else:
+                    if devices is not None:
+                        print(f"Couldn't find previous configuration set for {selected_device}!")
                     continue
                 document_id = {'_id': ObjectId(f"{conf_id}")}
             else:
@@ -130,10 +159,11 @@ parser.add_argument("-d", "--device", dest="device", default=None,
                     help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
 parser.add_argument("-t", "--status_text", dest="status_text", default="stable",
                     help='Text of configuration set status from which rollback will be applied (default "stable")')
-# parser.add_argument("-pc", "--previous_config", dest="previous_config", default=False, action='store_true',
-#                     help="Apply rollback from penultimate configuration set (default false)")
+parser.add_argument("-pc", "--previous_config", dest="previous_config", default=False, action='store_true',
+                    help="Apply rollback from previous configuration set (default false)")
 
 
 args = parser.parse_args()
 
-configRollback(args.config_id, args.soft_rollback, args.status_text, args.device, args.site, args.config_update_date)
+configRollback(args.config_id, args.soft_rollback, args.status_text, args.device, args.site, args.config_update_date,
+               args.previous_config)

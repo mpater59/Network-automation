@@ -20,6 +20,7 @@ db_env = yaml.load(stream, Loader=yaml.SafeLoader)
 myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
 mydb = myclient[f"{db_env['DB name']}"]
 col_configs = mydb[f"{db_env['DB collection configuration']}"]
+stream.close()
 
 
 def devicesConfiguration(site, device, config, soft_config_change=False, expand=False):
@@ -40,6 +41,7 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
         if device_temp["hostname"] == device and device_temp["site"] == site:
             selected_device = device_temp
             break
+    stream.close()
 
     commands = []
     active_config = False
