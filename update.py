@@ -94,6 +94,8 @@ def update(site, devices=None, status=None, new_documents=False):
                 configuration["hostname"] = device.get("hostname")
                 if status is None:
                     configuration["status"] = "unverified"
+                else:
+                    configuration["status"] = status
                 configuration["active"] = True
                 configuration["configuration"] = {}
 
