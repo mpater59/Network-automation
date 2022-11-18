@@ -2,6 +2,7 @@ import socket
 import netmiko.ssh_exception
 import paramiko.buffered_pipe
 import pymongo
+import yaml
 
 from netmiko import ConnectHandler
 import Devices_configuration.interfaces as interfaces
@@ -11,94 +12,103 @@ from Devices_configuration.vlanBridgeVxlan import vlan as vlan
 from Devices_configuration.vlanBridgeVxlan import bridge as bridge
 from Devices_configuration.vlanBridgeVxlan import vxlan as vxlan
 
-myclient = pymongo.MongoClient("mongodb://192.168.1.11:9000/")
-mydb = myclient["configsdb"]
-mycol = mydb["configurations"]
+
+stream = open("../database_env.yaml", 'r')
+db_env = yaml.load(stream, Loader=yaml.SafeLoader)
+
+myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
+mydb = myclient[f"{db_env['DB name']}"]
+col_configs = mydb[f"{db_env['DB collection configuration']}"]
 
 
-def devicesConfiguration(devices_list, config_list, soft_rollback=True):
-    device_connection = []
+def devicesConfiguration(site, device, config, soft_config_change=False, expand=False):
+
+    if site is None:
+        print("Enter name of site!")
+        exit()
+    else:
+        query = {"site": site}
+        if col_configs.count_documents(query) == 0:
+            print("Can't find this site in DB!")
+            exit()
+
+    stream = open("devices.yaml", 'r')
+    devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
+    selected_device = None
+    for device_temp in devices_temp:
+        if device_temp["hostname"] == device and device_temp["site"] == site:
+            selected_device = device_temp
+            break
+
     commands = []
     active_config = False
-    if soft_rollback is True:
-        if mycol.count_documents({"active": True}) > 0:
+    if soft_config_change is True:
+        if col_configs.count_documents({"active": True, "hostname": device, "site": site}) > 0:
             active_config = True
         else:
-            print("Active configuration not detected in the database!")
-            exit()
-    for (counter, device), config in zip(enumerate(devices_list), config_list):
-        device_connection_temp = {
-            "device_type": device.get("machine type"),
-            "ip": device.get("ip address"),
-            "username": device.get("username"),
-            "password": device.get("password"),
-            "secret": device.get("secret"),
-            "port": device.get("port"),
-            "verbose": True
-        }
-        device_connection.append(device_connection_temp)
-        commands_temp = []
-        db_config = None
-        unknown_device = True
-        if active_config is True:
-            db_config_list = list(mycol.find({"active": True}).sort("date", -1)[0].get("devices").values())
-            for config_list in db_config_list:
-                if config.get("hostname") == config_list.get("hostname"):
-                    db_config = config_list
-                    unknown_device = False
-                    break
-            if unknown_device is True:
-                print("Detected new device! Check if hostnames for all devices are correct")
-                exit()
+            print(f"Active configuration not detected in the database for {device}!")
 
-        # Commands for Cumulus VX virtual machines
-        expand = False
-        # hard configuration reset
-        if active_config is False or config.get("hard clear config"):
-            commands_temp.append("net del all")
-        # hostname configuration
-        if config.get("hostname"):
-            commands_temp.append(f"net add hostname {config.get('hostname')}")
-        # interfaces configuration
-        for command_cli in interfaces.interfaces(config, db_config, expand):
-            commands_temp.append(command_cli)
-        # loopback configuration
-        for command_cli in interfaces.loopback(config, db_config, expand):
-            commands_temp.append(command_cli)
-        # ospf configuration
-        for command_cli in ospf(config, db_config, expand):
-            commands_temp.append(command_cli)
-        # bgp configuration
-        for command_cli in bgp(config, db_config, expand):
-            commands_temp.append(command_cli)
-        # vlan configuration
-        for command_cli in vlan(config, db_config, expand):
-            commands_temp.append(command_cli)
-        # bridge configuration
-        for command_cli in bridge(config, db_config, expand):
-            commands_temp.append(command_cli)
-        # vxlan configuration
-        for command_cli in vxlan(config, db_config, expand):
-            commands_temp.append(command_cli)
-        # ending configuration
-        if config.get("commit"):
-            commands_temp.append("net commit")
-        commands.append(commands_temp)
+    device_connection = {
+        "device_type": selected_device.get("machine type"),
+        "ip": selected_device.get("ip address"),
+        "username": selected_device.get("username"),
+        "password": selected_device.get("password"),
+        "secret": selected_device.get("secret"),
+        "port": selected_device.get("port"),
+        "verbose": True
+    }
 
-    for deviceCommands in commands:
-        print(deviceCommands)
+    db_config = None
+    if active_config is True:
+        query = {"active": True, "site": site, "hostname": device}
+        if col_configs.count_documents(query) > 0:
+            db_config = col_configs.find(query).sort("last update datetime", -1)[0].get("configuration")
+        else:
+            print(f"Couldn't find active configuration for {device} in DB!")
 
-    for counter, device in enumerate(device_connection):
-        for trial in range(5):
-            try:
-                connection = ConnectHandler(**device)
-                output = connection.send_config_set(commands[counter])
-                print(output)
-                connection.disconnect()
-                break
-            except paramiko.buffered_pipe.PipeTimeout:
-                print(f"Timeout - {trial + 1}")
-            except socket.timeout:
-                print(f"Timeout - {trial + 1}")
-            except netmiko.ssh_exception.NetmikoTimeoutException:
-                print(f"Timeout - {trial + 1}")
+    # Commands for Cumulus VX virtual machines
+    # hard configuration reset
+    if active_config is False and expand is False:
+        commands.append("net del all")
+    # hostname configuration
+    if config.get("hostname"):
+        commands.append(f"net add hostname {config.get('hostname')}")
+    # interfaces configuration
+    for command_cli in interfaces.interfaces(config, db_config, expand):
+        commands.append(command_cli)
+    # loopback configuration
+    for command_cli in interfaces.loopback(config, db_config, expand):
+        commands.append(command_cli)
+    # ospf configuration
+    for command_cli in ospf(config, db_config, expand):
+        commands.append(command_cli)
+    # bgp configuration
+    for command_cli in bgp(config, db_config, expand):
+        commands.append(command_cli)
+    # vlan configuration
+    for command_cli in vlan(config, db_config, expand):
+        commands.append(command_cli)
+    # bridge configuration
+    for command_cli in bridge(config, db_config, expand):
+        commands.append(command_cli)
+    # vxlan configuration
+    for command_cli in vxlan(config, db_config, expand):
+        commands.append(command_cli)
+    # ending configuration
+    commands.append("net commit")
+
+    print(commands)
+
+    for trial in range(5):
+        try:
+            connection = ConnectHandler(**device_connection)
+            output = connection.send_config_set(commands)
+            print(output)
+            connection.disconnect()
+            break
+        except paramiko.buffered_pipe.PipeTimeout:
+            print(f"Timeout - {trial + 1}")
+        except socket.timeout:
+            print(f"Timeout - {trial + 1}")
+        except netmiko.ssh_exception.NetmikoTimeoutException:
+            print(f"Timeout - {trial + 1}")

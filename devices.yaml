@@ -7,7 +7,9 @@ username: cumulus
 password: cumulus1
 secret: cumulus1
 port: 22
-device type: spine
+device information:
+  type: spine
+  id: 1
 site: test1
 ...
 ---
@@ -19,7 +21,9 @@ username: cumulus
 password: cumulus1
 secret: cumulus1
 port: 22
-device type: spine
+device information:
+  type: spine
+  id: 2
 site: test1
 ...
 ---
@@ -31,7 +35,9 @@ username: cumulus
 password: cumulus1
 secret: cumulus1
 port: 22
-device type: leaf
+device information:
+  type: leaf
+  id: 1
 site: test1
 ...
 ---
@@ -43,7 +49,9 @@ username: cumulus
 password: cumulus1
 secret: cumulus1
 port: 22
-device type: leaf
+device information:
+  type: leaf
+  id: 2
 site: test1
 ...
 ---
@@ -55,7 +63,9 @@ username: cumulus
 password: cumulus1
 secret: cumulus1
 port: 22
-device type: leaf
+device information:
+  type: leaf
+  id: 3
 site: test1
 ...
 ---
@@ -67,6 +77,8 @@ username: cumulus
 password: cumulus1
 secret: cumulus1
 port: 22
-device type: leaf
+device information:
+  type: leaf
+  id: 4
 site: test1
 ...
