@@ -65,9 +65,9 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
         if config_id is not None:
             if re.search("^[0-9a-f]{24}$", config_id):
                 query1 = {'config set information.last config set id': ObjectId(f"{config_id}"), "site": site,
-                          "hostname": device}
+                          "device hostname": device}
                 query2 = {'config set information.archived config set id': ObjectId(f"{config_id}"), "site": site,
-                          "hostname": device}
+                          "device hostname": device}
                 if col_configs.count_documents(query1) > 0:
                     conf_id = str(col_configs.find_one(query1).get("_id"))
                 elif col_configs.count_documents(query2) > 0:
@@ -82,9 +82,9 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
         elif config_update_date is not None:
             if re.search("\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}", config_update_date):
                 date = datetime.strptime(config_update_date, "%d/%m/%Y %H:%M:%S")
-                query1 = {"site": site, "hostname": device,
+                query1 = {"site": site, "device hostname": device,
                           "config set information.last config set datetime": date}
-                query2 = {"site": site, "hostname": device,
+                query2 = {"site": site, "device hostname": device,
                           "config set information.archived config set datetime": date}
                 if col_configs.count_documents(query1) > 0:
                     conf_id = str(col_configs.find_one(query1).get("_id"))
@@ -98,14 +98,14 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
                 print("Entered wrong format of configuration update datetime, enter dd/mm/YYYY HH:MM:SS!")
                 exit()
         elif status is not None:
-            query = {"site": site, "hostname": device, "status": status}
+            query = {"site": site, "device hostname": device, "status": status}
             if col_configs.count_documents(query) > 0:
                 conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
                 get_condition = {'_id': ObjectId(f"{conf_id}")}
             else:
                 continue
         else:
-            query = {"site": site, "hostname": device, "active": True}
+            query = {"site": site, "device hostname": device, "active": True}
             if col_configs.count_documents(query) > 0:
                 conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
                 get_condition = {'_id': ObjectId(f"{conf_id}")}

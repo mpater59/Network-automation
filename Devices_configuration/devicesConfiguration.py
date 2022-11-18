@@ -46,7 +46,7 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
     commands = []
     active_config = False
     if soft_config_change is True:
-        if col_configs.count_documents({"active": True, "hostname": device, "site": site}) > 0:
+        if col_configs.count_documents({"active": True, "device hostname": device, "site": site}) > 0:
             active_config = True
         else:
             print(f"Active configuration not detected in the database for {device}!")
@@ -63,7 +63,7 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
 
     db_config = None
     if active_config is True:
-        query = {"active": True, "site": site, "hostname": device}
+        query = {"active": True, "site": site, "device hostname": device}
         if col_configs.count_documents(query) > 0:
             db_config = col_configs.find(query).sort("last update datetime", -1)[0].get("configuration")
         else:

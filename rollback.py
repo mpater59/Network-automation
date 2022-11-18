@@ -73,9 +73,9 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
         if config_id is not None:
             if re.search("^[0-9a-f]{24}$", config_id):
                 query1 = {'config set information.last config set id': ObjectId(f"{config_id}"), "site": site,
-                          "hostname": selected_device}
+                          "device hostname": selected_device}
                 query2 = {'config set information.archived config set id': ObjectId(f"{config_id}"), "site": site,
-                          "hostname": selected_device}
+                          "device hostname": selected_device}
                 if col_configs.count_documents(query1) > 0:
                     conf_id = str(col_configs.find_one(query1).get("_id"))
                 elif col_configs.count_documents(query2) > 0:
@@ -91,9 +91,9 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
         elif config_update_date is not None:
             if re.search("\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}", config_update_date):
                 date = datetime.strptime(config_update_date, "%d/%m/%Y %H:%M:%S")
-                query1 = {"site": site, "hostname": selected_device,
+                query1 = {"site": site, "device hostname": selected_device,
                           "config set information.last config set datetime": date}
-                query2 = {"site": site, "hostname": selected_device,
+                query2 = {"site": site, "device hostname": selected_device,
                           "config set information.archived config set datetime": date}
                 if col_configs.count_documents(query1) > 0:
                     conf_id = str(col_configs.find_one(query1).get("_id"))
@@ -108,9 +108,9 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                 print("Entered wrong format of configuration set datetime, enter dd/mm/YYYY HH:MM:SS!")
                 exit()
         elif pc_datetime is not None:
-            query1 = {"site": site, "hostname": selected_device,
+            query1 = {"site": site, "device hostname": selected_device,
                       "config set information.last config set datetime": pc_datetime}
-            query2 = {"site": site, "hostname": selected_device,
+            query2 = {"site": site, "device hostname": selected_device,
                       "config set information.archived config set datetime": pc_datetime}
             if col_configs.count_documents(query1) > 0:
                 conf_id = str(col_configs.find_one(query1).get("_id"))
@@ -122,7 +122,7 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
                 continue
             document_id = {'_id': ObjectId(f"{conf_id}")}
         else:
-            query = {"site": site, "hostname": selected_device, "status": status}
+            query = {"site": site, "device hostname": selected_device, "status": status}
             if col_configs.count_documents(query) > 0:
                 conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
             else:
@@ -135,7 +135,7 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
 
         devicesConfiguration(site, selected_device, config, soft_rollback)
 
-        query_old = {"active": True, "site": site, "hostname": selected_device, "_id": {"$ne": document_id['_id']}}
+        query_old = {"active": True, "site": site, "device hostname": selected_device, "_id": {"$ne": document_id['_id']}}
         if col_configs.count_documents(query_old) > 0:
             values_old = {"$set": {"active": False}}
             db_update_old = col_configs.update_many(query_old, values_old)
