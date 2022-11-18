@@ -112,7 +112,7 @@ def update(site, devices=None, status=None, new_documents=False):
                 configuration["configuration"].update(updateVxLAN(output_list))
                 connection.disconnect()
 
-                query = {"active": True, "configuration.hostname": device["hostname"], "site": device["site"]}
+                query = {"active": True, "hostname": device["hostname"], "site": device["site"]}
                 new_values = {"$set": {"active": False}}
                 modified = False
                 if col_configs.count_documents(query) > 0:
@@ -120,7 +120,7 @@ def update(site, devices=None, status=None, new_documents=False):
                     if key_exists(old_config, "configuration") and new_documents is False:
                         if old_config["configuration"] == configuration["configuration"]:
 
-                            query = {"active": True, "configuration.hostname": device["hostname"],
+                            query = {"active": True, "hostname": device["hostname"],
                                      "site": device["site"], "_id": {"$ne": ObjectId(old_config["_id"])}}
                             col_configs.update_many(query, new_values)
 
