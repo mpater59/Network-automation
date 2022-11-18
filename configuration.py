@@ -1,6 +1,7 @@
 import argparse
 import pymongo
 import yaml
+from bson import objectid
 
 from Devices_configuration.devicesConfiguration import devicesConfiguration
 from other import check_if_exists
@@ -14,6 +15,10 @@ myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
 mydb = myclient[f"{db_env['DB name']}"]
 col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
+
+
+def objectid_constructor(loader, data):
+    return objectid.ObjectId(loader.construct_scalar(data))
 
 
 def configuration(site, devices, configs_list, status=None, soft_config_change=False, expand=False, new_documents=False):
@@ -30,6 +35,7 @@ def configuration(site, devices, configs_list, status=None, soft_config_change=F
     configs = None
     if isinstance(configs_list, str):
         stream = open(configs_list, 'r')
+        yaml.add_constructor("!ObjectID:", objectid_constructor)
         configs_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
 
         configs = []
