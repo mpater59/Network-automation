@@ -3,6 +3,7 @@ import netmiko.ssh_exception
 import paramiko.buffered_pipe
 import pymongo
 import yaml
+import os
 
 from netmiko import ConnectHandler
 import Devices_configuration.interfaces as interfaces
@@ -13,7 +14,10 @@ from Devices_configuration.vlanBridgeVxlan import bridge as bridge
 from Devices_configuration.vlanBridgeVxlan import vxlan as vxlan
 
 
-stream = open("../database_env.yaml", 'r')
+cur_path = os.path.dirname(__file__)
+new_path = os.path.relpath('../database_env.yaml', cur_path)
+
+stream = open(new_path, 'r')
 db_env = yaml.load(stream, Loader=yaml.SafeLoader)
 
 myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
