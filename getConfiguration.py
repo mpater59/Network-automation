@@ -57,7 +57,7 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
                 selected_devices.append(known_device["hostname"])
 
     configs = []
-    exit()
+
     for device in selected_devices:
 
         get_condition = None
