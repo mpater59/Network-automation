@@ -52,16 +52,15 @@ def configuration(site, configs_list, status=None, soft_config_change=False, exp
 
     selected_devices = []
     stream = open("devices.yaml", 'r')
-    devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
+    devices_temp = list(yaml.load_all(stream, Loader=yaml.SafeLoader))
     for config in configs:
         device_exists = False
         if key_exists(config, "device hostname") is True:
             for device_temp in devices_temp:
-                if device_temp["site"] == site:
-                    if device_temp["hostname"] == config["device hostname"]:
-                        selected_devices.append(device_temp["hostname"])
-                        device_exists = True
-                        break
+                if device_temp["site"] == site and device_temp["hostname"] == config["device hostname"]:
+                    selected_devices.append(device_temp["hostname"])
+                    device_exists = True
+                    break
             if device_exists is False:
                 print(f"Device {config['device hostname']} doesn't exist in DB for site {site}!")
                 exit()
