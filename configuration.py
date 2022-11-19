@@ -5,6 +5,7 @@ from bson import objectid
 
 from Devices_configuration.devicesConfiguration import devicesConfiguration
 from other import check_if_exists
+from other import key_exists
 from Update_database.updateConfigurations import update
 
 
@@ -21,7 +22,7 @@ def objectid_constructor(loader, data):
     return objectid.ObjectId(loader.construct_scalar(data))
 
 
-def configuration(site, devices, configs_list, status=None, soft_config_change=False, expand=False, new_documents=False):
+def configuration(site, configs_list, status=None, soft_config_change=False, expand=False, new_documents=False): # devices,
 
     if site is None:
         print("Enter name of site!")
@@ -49,40 +50,35 @@ def configuration(site, devices, configs_list, status=None, soft_config_change=F
         print("Enter path to file with configurations or list of dictionaries with configurations!")
         exit()
 
-    split_devices = None
-    if devices is not None:
-        split_devices = devices.split(',')
-    else:
-        print("Enter hostnames of devices!")
-        exit()
-
-    if len(split_devices) != len(configs):
-        print("Enter the same number of devices and configurations that you want to apply!")
-
     selected_devices = []
     stream = open("devices.yaml", 'r')
     devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
-    for device_temp in devices_temp:
-        if device_temp["site"] == site:
-            selected_devices.append(device_temp["hostname"])
+    for config in configs:
+        device_exists = False
+        if key_exists(config, "device hostname"):
+            for device_temp in devices_temp:
+                if device_temp["site"] == site:
+                    if device_temp["device hostname"] == config["device hostname"]:
+                        selected_devices.append(device_temp["hostname"])
+                        device_exists = True
+                        break
+            if device_exists is False:
+                print(f"Device {config['device hostname']} doesn't exist in DB for site {site}!")
+                exit()
+        else:
+            print('Add hostname of device as "device hostname" field!')
     stream.close()
 
-    for device in split_devices:
-        if check_if_exists(device, selected_devices) is False:
-            print(f"Device {device} doesn't exist in DB for site {site}!")
-            exit()
-
-    for device in split_devices:
-        for config in configs:
-            if device == config["hostname"]:
-                devicesConfiguration(site, device, config, soft_config_change, expand)
-                break
+    for config in configs:
+        devicesConfiguration(site, config["device hostname"], config, soft_config_change, expand)
+        break
 
     merged_devices = ''
     first_iter = True
-    for device in split_devices:
+    for device in selected_devices:
         if first_iter is True:
-            merged_devices = devices
+            merged_devices = device
+            first_iter = False
         else:
             merged_devices = merged_devices + ',' + device
 
@@ -92,8 +88,6 @@ def configuration(site, devices, configs_list, status=None, soft_config_change=F
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
-parser.add_argument("-d", "--device", dest="device", default=None,
-                    help="Name of devices, separate with ','")
 parser.add_argument("-cf", "--config_file", dest="config_file",
                     help="Path to .yaml file with saved configurations")
 parser.add_argument("-t", "--status_text", dest="status_text", default=None,
@@ -107,4 +101,4 @@ parser.add_argument("-nd", "--new_documents", dest="new_documents", default=Fals
 
 args = parser.parse_args()
 
-configuration(args.site, args.device, args.config_file, args.status_text, args.soft_change, args.expand, args.new_documents)
+configuration(args.site, args.config_file, args.status_text, args.soft_change, args.expand, args.new_documents)
