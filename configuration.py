@@ -70,7 +70,6 @@ def configuration(site, configs_list, status=None, soft_config_change=False, exp
 
     for config in configs:
         devicesConfiguration(site, config["device hostname"], config, soft_config_change, expand)
-        break
 
     merged_devices = ''
     first_iter = True
