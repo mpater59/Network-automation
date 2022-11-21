@@ -90,7 +90,6 @@ def update_device(site, device, soft_update=True, expand=True):
         print(f"Enter proper device type for {selected_device['hostname']}!")
 
     print(config)
-    exit()
 
     devicesConfiguration(site, device, config, soft_update, expand)
 
