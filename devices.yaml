@@ -1,5 +1,3 @@
----
-#Spine 1
 hostname: Spine1
 machine type: linux
 ip address: 10.0.0.11
@@ -11,9 +9,8 @@ device information:
   type: spine
   id: 1
 site: test1
-...
+number of ports: 6
 ---
-#Spine 2
 hostname: Spine2
 machine type: linux
 ip address: 10.0.0.12
@@ -25,9 +22,8 @@ device information:
   type: spine
   id: 2
 site: test1
-...
+number of ports: 6
 ---
-#Leaf 1
 hostname: Leaf1
 machine type: linux
 ip address: 10.0.0.101
@@ -39,9 +35,8 @@ device information:
   type: leaf
   id: 1
 site: test1
-...
+number of ports: 6
 ---
-#Leaf 2
 hostname: Leaf2
 machine type: linux
 ip address: 10.0.0.102
@@ -53,9 +48,8 @@ device information:
   type: leaf
   id: 2
 site: test1
-...
+number of ports: 6
 ---
-#Leaf 3
 hostname: Leaf3
 machine type: linux
 ip address: 10.0.0.103
@@ -67,9 +61,8 @@ device information:
   type: leaf
   id: 3
 site: test1
-...
+number of ports: 6
 ---
-#Leaf 4
 hostname: Leaf4
 machine type: linux
 ip address: 10.0.0.104
@@ -81,4 +74,4 @@ device information:
   type: leaf
   id: 4
 site: test1
-...
+number of ports: 6

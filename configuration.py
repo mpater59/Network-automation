@@ -4,7 +4,6 @@ import yaml
 from bson import objectid
 
 from Devices_configuration.devicesConfiguration import devicesConfiguration
-from other import check_if_exists
 from other import key_exists
 from Update_database.updateConfigurations import update
 
@@ -22,7 +21,7 @@ def objectid_constructor(loader, data):
     return objectid.ObjectId(loader.construct_scalar(data))
 
 
-def configuration(site, configs_list, status=None, soft_config_change=False, expand=False, new_documents=False): # devices,
+def configuration(site, configs_list, status=None, soft_config_change=False, expand=False, new_documents=False):
 
     if site is None:
         print("Enter name of site!")
