@@ -23,15 +23,6 @@ stream.close()
 
 def add_device(site, devices_file, status=None, soft_update=False, expand=False):
 
-    if site is None:
-        print("Enter name of site!")
-        exit()
-    else:
-        query = {"site": site}
-        if col_configs.count_documents(query) == 0:
-            print("Can't find this site in DB!")
-            exit()
-
     devices = None
     if isinstance(devices_file, str):
         stream = open(devices_file, 'r')
