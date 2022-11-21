@@ -25,7 +25,10 @@ def interfaces(config, db_config=None, expand=False):
 
             # config ip address
             if key_exists(interface, "ip address"):
-                ip_address = interface["ip address"]
+                if isinstance(interface["ip address"], str) is True:
+                    ip_address = [interface["ip address"]]
+                else:
+                    ip_address = interface["ip address"]
 
                 if key_exists(db_interface, "ip address"):
                     db_ip_address = db_interface["ip address"]
