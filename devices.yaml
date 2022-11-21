@@ -1,6 +1,6 @@
 hostname: Spine1
 machine type: linux
-ip address: 10.0.10.1
+ip address: 10.0.10.11
 username: cumulus
 password: cumulus1
 secret: cumulus1
@@ -13,7 +13,7 @@ number of ports: 6
 ---
 hostname: Spine2
 machine type: linux
-ip address: 10.0.10.2
+ip address: 10.0.10.12
 username: cumulus
 password: cumulus1
 secret: cumulus1
