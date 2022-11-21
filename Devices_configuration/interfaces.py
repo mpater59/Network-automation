@@ -73,7 +73,10 @@ def loopback(config, db_config=None, expand=False):
 
     # config loopback ip address
     if key_exists(config, "loopback", "ip address"):
-        ip_address = config["loopback"]["ip address"]
+        if isinstance(config["loopback"]["ip address"], str) is True:
+            ip_address = config["loopback"]["ip address"]
+        else:
+            ip_address = config["loopback"]["ip address"]
         db_ip_address = None
         if key_exists(db_config, "loopback", "ip address"):
             db_ip_address = db_config["loopback"]["ip address"]
