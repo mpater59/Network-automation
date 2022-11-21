@@ -290,7 +290,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
                         f"Device {selected_device['hostname']} doesn't have free port for AS {as_id} neighbor (ip address: {border})!")
 
     # update loopback
-    if key_exists(db_config, "loopback"):
+    if key_exists(db_config, "loopback", "ip address"):
         if db_config["loopback"]["ip address"] != device_id:
             db_config["loopback"]["ip address"] = [device_id]
     elif active is True:
