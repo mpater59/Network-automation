@@ -291,12 +291,12 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
 
     # update loopback
     if key_exists(db_config, "loopback", "ip address"):
-        if db_config["loopback"]["ip address"] != device_id:
-            db_config["loopback"]["ip address"] = [device_id]
+        if db_config["loopback"]["ip address"] != f'{device_id}/32':
+            db_config["loopback"]["ip address"] = f'{device_id}/32'
     elif active is True:
-        db_config["loopback"]["ip address"] = [device_id]
+        db_config["loopback"]["ip address"] = f'{device_id}/32'
     else:
-        config["loopback"] = {"ip address": [device_id]}
+        config["loopback"] = {"ip address": f'{device_id}/32'}
 
     # update ospf
     if key_exists(db_config, "ospf"):
