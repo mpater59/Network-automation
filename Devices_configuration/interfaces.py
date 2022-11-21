@@ -74,12 +74,15 @@ def loopback(config, db_config=None, expand=False):
     # config loopback ip address
     if key_exists(config, "loopback", "ip address"):
         if isinstance(config["loopback"]["ip address"], str) is True:
-            ip_address = config["loopback"]["ip address"]
+            ip_address = [config["loopback"]["ip address"]]
         else:
             ip_address = config["loopback"]["ip address"]
         db_ip_address = None
         if key_exists(db_config, "loopback", "ip address"):
-            db_ip_address = db_config["loopback"]["ip address"]
+            if isinstance(db_config["loopback"]["ip address"], str) is True:
+                db_ip_address = [db_config["loopback"]["ip address"]]
+            else:
+                db_ip_address = db_config["loopback"]["ip address"]
             for dbIpAddr in db_ip_address:
                 if check_if_exists(dbIpAddr, ip_address) is False:
                     commands.append(f"net del loopback lo ip address {dbIpAddr}")
