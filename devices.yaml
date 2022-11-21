@@ -1,6 +1,6 @@
 hostname: Spine1
 machine type: linux
-ip address: 10.0.0.11
+ip address: 10.0.10.1
 username: cumulus
 password: cumulus1
 secret: cumulus1
@@ -13,7 +13,7 @@ number of ports: 6
 ---
 hostname: Spine2
 machine type: linux
-ip address: 10.0.0.12
+ip address: 10.0.10.2
 username: cumulus
 password: cumulus1
 secret: cumulus1
@@ -26,7 +26,7 @@ number of ports: 6
 ---
 hostname: Leaf1
 machine type: linux
-ip address: 10.0.0.101
+ip address: 10.0.10.101
 username: cumulus
 password: cumulus1
 secret: cumulus1
@@ -39,7 +39,7 @@ number of ports: 6
 ---
 hostname: Leaf2
 machine type: linux
-ip address: 10.0.0.102
+ip address: 10.0.10.102
 username: cumulus
 password: cumulus1
 secret: cumulus1
@@ -52,7 +52,7 @@ number of ports: 6
 ---
 hostname: Leaf3
 machine type: linux
-ip address: 10.0.0.103
+ip address: 10.0.10.103
 username: cumulus
 password: cumulus1
 secret: cumulus1
@@ -65,7 +65,7 @@ number of ports: 6
 ---
 hostname: Leaf4
 machine type: linux
-ip address: 10.0.0.104
+ip address: 10.0.10.104
 username: cumulus
 password: cumulus1
 secret: cumulus1
