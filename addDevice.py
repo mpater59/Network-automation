@@ -21,7 +21,7 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
-def add_device(site, devices_file, status=None, soft_update=True, expand=True):
+def add_device(site, devices_file, status=None, soft_update=False, expand=False):
 
     if site is None:
         print("Enter name of site!")
@@ -195,9 +195,9 @@ parser.add_argument("-df", "--devices_file", dest="devices_file",
 parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status that will be set for this update in DB")
 parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, action='store_true',
-                    help="Apply change without deleting existing configuration on devices (default true)")
+                    help="Apply change without deleting existing configuration on devices (default false)")
 parser.add_argument("-ex", "--expand", dest="expand", default=False, action='store_true',
-                    help="Add changes on existing configuration")
+                    help="Add changes on existing configuration (default false)")
 
 args = parser.parse_args()
 
