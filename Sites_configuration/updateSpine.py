@@ -48,7 +48,7 @@ def get_neighbor_ports(selected_device, devices_file, site):
             exit()
 
     device_config_id = selected_device["device information"]["id"]
-    site_id = selected_site["first octet of subnet ip address"]
+    site_id = selected_site["site id"]
 
     neighbors = []
     for device_file in devices_file:
