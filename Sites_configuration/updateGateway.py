@@ -111,7 +111,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
 
     for as_id in selected_device["as neighbors"]:
         for addr in selected_device["as neighbors"][as_id]["ip address"]:
-            neigh_as_ip_addr.append(addr)
+            neigh_as_ip_addr.append(addr.split('/')[0])
             neigh_as.append(as_id)
             ip_addr_split = addr.split('/')[0].split('.')
             if ip_addr_split[-1] == '2':
@@ -278,7 +278,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
                     config["interfaces"] = {}
                 for i in range(device_swp):
                     if check_if_exists(f"swp{i + 1}", taken_ports) is False:
-                        config["interfaces"].update({f"swp{i + 1}": {as_id: {"ip address": border}}})
+                        config["interfaces"].update({f"swp{i + 1}": {"ip address": border}})
                         free_port = True
                         if check_if_exists(f"swp{i + 1}", taken_ports) is False:
                             taken_ports.append(f"swp{i + 1}")
@@ -362,7 +362,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
         for interface in db_config["ospf"]["interfaces"]:
             db_ospf.append(interface)
         for interface in db_ospf:
-            if check_if_exists(interface, neighbors_ports) is False:
+            if check_if_exists(interface, neighbors_ports) is False and interface != 'lo':
                 if key_exists(db_config, "ospf", "interfaces", interface, "area") is True:
                     db_config["ospf"]["interfaces"].pop(interface, None)
 
@@ -381,7 +381,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
             db_config["bgp"]["router-id"] = device_id
         for neighbor in neighbors:
             neigh_exists = False
-            bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             if key_exists(db_config, "bgp", "neighbors"):
                 for neigh_id in db_config["bgp"]["neighbors"]:
@@ -426,7 +426,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
         config["bgp"]["router-id"] = device_id
         config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
-            bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as

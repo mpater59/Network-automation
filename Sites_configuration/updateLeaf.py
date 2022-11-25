@@ -261,7 +261,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
         for interface in db_config["ospf"]["interfaces"]:
             db_ospf.append(interface)
         for interface in db_ospf:
-            if check_if_exists(interface, neighbors_ports) is False:
+            if check_if_exists(interface, neighbors_ports) is False and interface != 'lo':
                 if key_exists(db_config, "ospf", "interfaces", interface, "area") is True:
                     db_config["ospf"]["interfaces"].pop(interface, None)
 
@@ -285,7 +285,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
             db_config["bgp"]["advertise-all-vni"] = True
         for neighbor in neighbors:
             neigh_exists = False
-            bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             if key_exists(db_config, "bgp", "neighbors"):
                 for neigh_id in db_config["bgp"]["neighbors"]:
@@ -324,7 +324,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
         db_config["bgp"]["router-id"] = device_id
         db_config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
-            bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
@@ -335,7 +335,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
         config["bgp"]["router-id"] = device_id
         config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
-            bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as

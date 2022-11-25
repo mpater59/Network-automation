@@ -82,6 +82,8 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
             neighbors.append(device_file)
         elif device_file["device information"]["type"] == "gateway":
             neighbors.append(device_file)
+        elif device_file["device information"]["type"] == "spine" and device_file["hostname"] != selected_device["hostname"]:
+            spine_list.append(device_file)
 
     device_config_id = selected_device["device information"]["id"]
     device_swp = selected_device["number of ports"]
@@ -260,7 +262,7 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
         for interface in db_config["ospf"]["interfaces"]:
             db_ospf.append(interface)
         for interface in db_ospf:
-            if check_if_exists(interface, neighbors_ports) is False:
+            if check_if_exists(interface, neighbors_ports) is False and interface != 'lo':
                 if key_exists(db_config, "ospf", "interfaces", interface, "area") is True:
                     db_config["ospf"]["interfaces"].pop(interface, None)
 
@@ -280,9 +282,9 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
         for neighbor in neighbors:
             neigh_exists = False
             if neighbor["device information"]["type"] == "leaf":
-                bgp_id_neigh = f'1.1.1.{100+neighbor["device information"]["id"]}'
+                bgp_id_neigh = f'1.1.{site_id}.{100+neighbor["device information"]["id"]}'
             else:
-                bgp_id_neigh = f'1.1.1.{200 + neighbor["device information"]["id"]}'
+                bgp_id_neigh = f'1.1.{site_id}.{200 + neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             if key_exists(db_config, "bgp", "neighbors"):
                 for neigh_id in db_config["bgp"]["neighbors"]:
@@ -341,9 +343,9 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
         db_config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
             if neighbor["device information"]["type"] == "leaf":
-                bgp_id_neigh = f'1.1.1.{100 + neighbor["device information"]["id"]}'
+                bgp_id_neigh = f'1.1.{site_id}.{100 + neighbor["device information"]["id"]}'
             else:
-                bgp_id_neigh = f'1.1.1.{200 + neighbor["device information"]["id"]}'
+                bgp_id_neigh = f'1.1.{site_id}.{200 + neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
@@ -359,9 +361,9 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
         config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
             if neighbor["device information"]["type"] == "leaf":
-                bgp_id_neigh = f'1.1.1.{100 + neighbor["device information"]["id"]}'
+                bgp_id_neigh = f'1.1.{site_id}.{100 + neighbor["device information"]["id"]}'
             else:
-                bgp_id_neigh = f'1.1.1.{200 + neighbor["device information"]["id"]}'
+                bgp_id_neigh = f'1.1.{site_id}.{200 + neighbor["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
@@ -374,14 +376,14 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
     # update spine bgp
     if db_config is not None:
         for spine in spine_list:
-            bgp_id_neigh = f'1.1.1.{spine["device information"]["id"]}'
+            bgp_id_neigh = f'1.1.{site_id}.{spine["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
     else:
         for spine in spine_list:
-            bgp_id_neigh = f'1.1.1.{spine["device information"]["id"]}'
+            bgp_id_neigh = f'1.1.{site_id}.{spine["device information"]["id"]}'
             bgp_neighbors.append(bgp_id_neigh)
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
