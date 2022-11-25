@@ -30,9 +30,9 @@ def update_device(site, device, soft_update=True, expand=True):
     devices_file = []
     stream = open("devices.yaml", 'r')
     devices_file_temp = list(yaml.load_all(stream, Loader=yaml.SafeLoader))
-    for device in devices_file_temp:
-        if device["site"] == site:
-            devices_file.append(device)
+    for device_temp in devices_file_temp:
+        if device_temp["site"] == site:
+            devices_file.append(device_temp)
     selected_device = None
     device_exists = False
     for device_file in devices_file:
