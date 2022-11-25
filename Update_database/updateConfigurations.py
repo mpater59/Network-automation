@@ -31,15 +31,6 @@ stream.close()
 
 def update(site, devices=None, status=None, new_documents=False):
 
-    if site is None:
-        print("Enter name of site!")
-        exit()
-    else:
-        query = {"site": site}
-        if col_configs.count_documents(query) == 0:
-            print("Can't find this site in DB!")
-            exit()
-
     if devices is not None:
         split_devices = devices.split(',')
     else:
