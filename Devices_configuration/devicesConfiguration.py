@@ -30,7 +30,7 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
         exit()
     else:
         query = {"site": site}
-        if col_configs.count_documents(query) == 0:
+        if col_configs.count_documents(query) == 0 and soft_config_change is True:
             print("Can't find this site in DB!")
             exit()
 
