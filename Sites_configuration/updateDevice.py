@@ -64,12 +64,13 @@ def update_device(site, device, soft_update=True, expand=True):
     gw_list = []
 
     for device_file in devices_file:
-        if device_file["device information"]["type"] == "spine":
-            spine_list.append(device_file)
-        elif device_file["device information"]["type"] == "leaf":
-            leaf_list.append(device_file)
-        elif device_file["device information"]["type"] == "gateway":
-            gw_list.append(device_file)
+        if device_file["site"] == site:
+            if device_file["device information"]["type"] == "spine":
+                spine_list.append(device_file)
+            elif device_file["device information"]["type"] == "leaf":
+                leaf_list.append(device_file)
+            elif device_file["device information"]["type"] == "gateway":
+                gw_list.append(device_file)
 
     device_type = selected_device["device information"]["type"]
 
