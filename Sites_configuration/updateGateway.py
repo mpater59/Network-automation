@@ -129,7 +129,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
     device_swp = selected_device["number of ports"]
     site_as = selected_site["bgp as"]
     site_ospf = selected_site["ospf area"]
-    site_id = selected_site["first octet of subnet ip address"]
+    site_id = selected_site["site id"]
     device_id = f'1.1.{site_id}.{200+device_config_id}'
 
     config = {}
