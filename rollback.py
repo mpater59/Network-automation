@@ -39,7 +39,8 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
     selected_devices = []
     if devices is not None:
         split_devices = devices.split(',')
-        for split_device in split_devices:
+        temp_split_devices = devices.split(',')
+        for split_device in temp_split_devices:
             for known_device in known_devices:
                 if known_device["site"] == site and known_device["hostname"] == split_device:
                     selected_devices.append(known_device["hostname"])
