@@ -23,7 +23,7 @@ def update_device(site, device, soft_update=True, expand=True):
         exit()
     else:
         query = {"site": site}
-        if col_configs.count_documents(query) == 0:
+        if col_configs.count_documents(query) == 0 and soft_update is True:
             print("Can't find this site in DB!")
             exit()
 
