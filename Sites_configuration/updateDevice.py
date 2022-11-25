@@ -27,8 +27,12 @@ def update_device(site, device, soft_update=True, expand=True):
             print("Can't find this site in DB!")
             exit()
 
+    devices_file = []
     stream = open("devices.yaml", 'r')
-    devices_file = list(yaml.load_all(stream, Loader=yaml.SafeLoader))
+    devices_file_temp = list(yaml.load_all(stream, Loader=yaml.SafeLoader))
+    for device in devices_file_temp:
+        if device["site"] == site:
+            devices_file.append(device)
     selected_device = None
     device_exists = False
     for device_file in devices_file:
@@ -58,19 +62,6 @@ def update_device(site, device, soft_update=True, expand=True):
         db_config = None
         active = False
         expand = False
-
-    spine_list = []
-    leaf_list = []
-    gw_list = []
-
-    for device_file in devices_file:
-        if device_file["site"] == site:
-            if device_file["device information"]["type"] == "spine":
-                spine_list.append(device_file)
-            elif device_file["device information"]["type"] == "leaf":
-                leaf_list.append(device_file)
-            elif device_file["device information"]["type"] == "gateway":
-                gw_list.append(device_file)
 
     device_type = selected_device["device information"]["type"]
 
