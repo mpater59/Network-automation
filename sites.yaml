@@ -2,11 +2,11 @@
 name: "test1"
 bgp as: 100
 ospf area: 0.0.0.0
-first octet of subnet ip address: 10
+site id: 10 # first octet of subnet ip address
 ...
 ---
 name: "test2"
 bgp as: 200
 ospf area: 0.0.0.0
-first octet of subnet ip address: 20
+site id: 20
 ...

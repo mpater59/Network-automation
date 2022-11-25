@@ -367,6 +367,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
                     db_config["ospf"]["interfaces"].pop(interface, None)
 
     # update bgp
+    bgp_neighbors = []
     if key_exists(db_config, "bgp"):
         if key_exists(db_config, "bgp", "as"):
             if db_config["bgp"]["as"] != str(site_as):
@@ -381,6 +382,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
         for neighbor in neighbors:
             neigh_exists = False
             bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_neighbors.append(bgp_id_neigh)
             if key_exists(db_config, "bgp", "neighbors"):
                 for neigh_id in db_config["bgp"]["neighbors"]:
                     if neigh_id == bgp_id_neigh:
@@ -414,6 +416,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
         db_config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
             bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_neighbors.append(bgp_id_neigh)
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
@@ -424,6 +427,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
         config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
             bgp_id_neigh = f'1.1.1.{neighbor["device information"]["id"]}'
+            bgp_neighbors.append(bgp_id_neigh)
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
@@ -439,6 +443,15 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
             bgp_id_neigh = f'{ip_addr}'
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = as_id
+
+    # update bgp (expand=False)
+    if expand is False and key_exists(db_config, "bgp", "neighbors"):
+        db_bgp = []
+        for neighbor in db_config["bgp"]["neighbors"]:
+            db_bgp.append(neighbor)
+        for neighbor in db_bgp:
+            if check_if_exists(neighbor, bgp_neighbors) is False:
+                db_config["bgp"]["neighbors"].pop(neighbor, None)
 
     if active is True:
         return db_config

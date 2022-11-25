@@ -170,5 +170,8 @@ def bgp(config, db_config=None, expand=False):
             if key_exists(db_bgp_config, "advertise-all-vni") and expand is False and reset_bgp is False:
                 if db_bgp_config["advertise-all-vni"] is False:
                     commands.append("net del bgp l2vpn evpn advertise-all-vni")
+    else:
+        if key_exists(db_config, "bgp", "as") and expand is False:
+            commands.append(f"net del bgp autonomous-system {db_config['bgp']['as']}")
 
     return commands
