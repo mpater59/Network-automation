@@ -18,7 +18,7 @@ def interfaces(config, db_config=None, expand=False):
         for int in config.get("interfaces"):
             interface = config["interfaces"][int]
 
-            if key_exists(db_config, "interfaces", int):
+            if key_exists(db_config, "interfaces", int) and len(db_config["interfaces"][int]) > 0:
                 db_interface = db_config["interfaces"][int]
             else:
                 db_interface = None

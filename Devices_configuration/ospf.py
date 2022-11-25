@@ -18,7 +18,7 @@ def ospf(config, db_config=None, expand=False):
     if key_exists(config, "ospf"):
         ospf_config = config["ospf"]
 
-        if key_exists(db_config, "ospf"):
+        if key_exists(db_config, "ospf") and len(db_config["ospf"]) > 0:
             db_ospf_config = db_config["ospf"]
         else:
             db_ospf_config = None

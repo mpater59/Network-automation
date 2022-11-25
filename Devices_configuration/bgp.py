@@ -115,7 +115,7 @@ def bgp(config, db_config=None, expand=False):
     if key_exists(config, "bgp"):
         bgp_config = config["bgp"]
 
-        if key_exists(db_config, "bgp"):
+        if key_exists(db_config, "bgp") and len(db_config["bgp"]) > 0:
             db_bgp_config = db_config["bgp"]
         else:
             db_bgp_config = None

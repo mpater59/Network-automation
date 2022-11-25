@@ -31,7 +31,7 @@ def vlan(config, db_config=None, expand=False):
         for vlan_id in config["vlan"]:
             vlan_config = config["vlan"][vlan_id]
 
-            if key_exists(db_config, "vlan", vlan_id):
+            if key_exists(db_config, "vlan", vlan_id) and len(db_config["vlan"][vlan_id]) > 0:
                 db_vlan_config = db_config["vlan"][vlan_id]
             else:
                 db_vlan_config = None
@@ -81,7 +81,7 @@ def bridge(config, db_config=None, expand=False):
     if key_exists(config, "bridge"):
         bridge_config = config["bridge"]
 
-        if key_exists(db_config, "bridge"):
+        if key_exists(db_config, "bridge") and len(db_config["bridge"]) > 0:
             db_bridge_config = db_config["bridge"]
         else:
             db_bridge_config = None
@@ -172,7 +172,7 @@ def vxlan(config, db_config=None, expand=False):
     if key_exists(config, "vxlan"):
         vxlan_config = config["vxlan"]
 
-        if key_exists(db_config, "vxlan"):
+        if key_exists(db_config, "vxlan") and len(db_config["vxlan"]) > 0:
             db_vxlan_config = db_config["vxlan"]
         else:
             db_vxlan_config = None
