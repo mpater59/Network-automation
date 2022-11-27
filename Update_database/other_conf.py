@@ -12,7 +12,7 @@ def updateHostname(configuration):
 
 
 def updateStaticRoute(configuration):
-    static_route = {}
+    static_route = {"static routes": {}}
     for i, line in enumerate(configuration):
         if re.search("^ip route \S+", line):
             temp_split = line.split(" ")
