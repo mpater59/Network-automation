@@ -51,6 +51,7 @@ def updateBGP(configuration):
                                 break
                 elif re.search("address-family ipv4 unicast", configuration[i + iter_skip]):
                     while True:
+                        test = configuration[i + iter_skip]
                         if re.search("^    neighbor \S+ route-reflector-client", configuration[i + iter_skip]):
                             neighbor = configuration[i + iter_skip].split(" ")[5]
                             if bgp.get("bgp").get("neighbors").get(neighbor) is None:
@@ -65,7 +66,7 @@ def updateBGP(configuration):
                             network = configuration[i + iter_skip].split(" ")[5]
                             if key_exists(bgp, "bgp", "networks") is False:
                                 bgp["bgp"]["networks"] = []
-                            if check_if_exists(network, bgp["bgp"]["networks"]):
+                            if check_if_exists(network, bgp["bgp"]["networks"]) is False:
                                 bgp["bgp"]["networks"].append(network)
                         iter_skip += 1
                         if not re.search("^    .*", configuration[i + iter_skip]):
