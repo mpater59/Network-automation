@@ -92,3 +92,59 @@ site: test1
 device information:
   type: gateway
   id: 1
+---
+machine type: linux
+ip address: 10.0.20.11
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+number of ports: 6
+hostname: Spine1
+site: test2
+device information:
+  type: spine
+  id: 1
+---
+machine type: linux
+ip address: 10.0.20.101
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+number of ports: 6
+hostname: Leaf1
+site: test2
+device information:
+  type: leaf
+  id: 1
+---
+machine type: linux
+ip address: 10.0.20.102
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+number of ports: 6
+hostname: Leaf2
+site: test2
+device information:
+  type: leaf
+  id: 2
+---
+machine type: linux
+ip address: 10.0.20.201
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+number of ports: 6
+as neighbors:
+  100:
+    ip address:
+    - 10.20.1.1/30
+hostname: Gateway1
+site: test2
+device information:
+  type: gateway
+  id: 1
