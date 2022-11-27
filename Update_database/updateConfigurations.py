@@ -15,6 +15,7 @@ from Update_database.vlanBridgeVxlan import updateVLAN
 from Update_database.vlanBridgeVxlan import updateBridge
 from Update_database.vlanBridgeVxlan import updateVxLAN
 from Update_database.other_conf import updateHostname
+from Update_database.other_conf import updateStaticRoute
 
 from other import key_exists
 from other import check_if_exists
@@ -99,6 +100,7 @@ def update(site, devices=None, status=None, new_documents=False):
                 configuration["configuration"].update(updateHostname(output_list))
                 configuration["configuration"].update(updateInterfaces(output_list))
                 configuration["configuration"].update(updateLoopback(output_list))
+                configuration["configuration"].update(updateStaticRoute(output_list))
                 configuration["configuration"].update(updateOSPF(output_list))
                 configuration["configuration"].update(updateBGP(output_list))
                 configuration["configuration"].update(updateVLAN(output_list))
