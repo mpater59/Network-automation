@@ -436,11 +436,13 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
     if db_config is not None:
         for ip_addr, as_id in zip(neigh_as_ip_addr, neigh_as):
             bgp_id_neigh = f'{ip_addr}'
+            bgp_neighbors.append(bgp_id_neigh)
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = as_id
     else:
         for ip_addr, as_id in zip(neigh_as_ip_addr, neigh_as):
             bgp_id_neigh = f'{ip_addr}'
+            bgp_neighbors.append(bgp_id_neigh)
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = as_id
 

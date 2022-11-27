@@ -39,7 +39,7 @@ def config_neighbors(bgp_config, db_bgp_config, expand, reset_bgp):
 
         # config remote
         if key_exists(neighbor, "remote"):
-            if key_exists(db_neighbor, "remote") and db_neighbor["remote"] != neighbor["remote"]:
+            if key_exists(db_neighbor, "remote") and str(db_neighbor["remote"]) != str(neighbor["remote"]):
                 commands.append(f"net del bgp neighbor {neigh} remote-as {db_neighbor['remote']}")
                 commands.append(f"net add bgp neighbor {neigh} remote-as {neighbor['remote']}")
             elif db_neighbor is None or reset_bgp is True:
