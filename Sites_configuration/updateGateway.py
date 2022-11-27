@@ -52,7 +52,7 @@ def get_neighbor_ports(selected_device, devices_file, site):
 
     neighbors = []
     for device_file in devices_file:
-        if device_file["device information"]["type"] == "spine":
+        if device_file["site"] == site and device_file["device information"]["type"] == "spine":
             neighbors.append(device_file)
 
     border_as_ip_addr = []
@@ -99,7 +99,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
     neighbors = []
 
     for device_file in devices_file:
-        if device_file["device information"]["type"] == "spine":
+        if device_file["site"] == selected_site["name"] and device_file["device information"]["type"] == "spine":
             neighbors.append(device_file)
 
     device_type = selected_device["device information"]["type"]

@@ -52,9 +52,9 @@ def get_neighbor_ports(selected_device, devices_file, site):
 
     neighbors = []
     for device_file in devices_file:
-        if device_file["device information"]["type"] == "leaf":
+        if device_file["site"] == site and device_file["device information"]["type"] == "leaf":
             neighbors.append(device_file)
-        elif device_file["device information"]["type"] == "gateway":
+        elif device_file["site"] == site and device_file["device information"]["type"] == "gateway":
             neighbors.append(device_file)
 
     for neighbor in neighbors:
@@ -78,11 +78,12 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
     spine_list = []
 
     for device_file in devices_file:
-        if device_file["device information"]["type"] == "leaf":
+        if device_file["site"] == selected_site["name"] and device_file["device information"]["type"] == "leaf":
             neighbors.append(device_file)
-        elif device_file["device information"]["type"] == "gateway":
+        elif device_file["site"] == selected_site["name"] and device_file["device information"]["type"] == "gateway":
             neighbors.append(device_file)
-        elif device_file["device information"]["type"] == "spine" and device_file["hostname"] != selected_device["hostname"]:
+        elif device_file["site"] == selected_site["name"] and device_file["device information"]["type"] == "spine" \
+                and device_file["hostname"] != selected_device["hostname"]:
             spine_list.append(device_file)
 
     device_config_id = selected_device["device information"]["id"]

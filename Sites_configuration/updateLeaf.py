@@ -53,7 +53,7 @@ def get_neighbor_ports(selected_device, devices_file, site):
 
     neighbors = []
     for device_file in devices_file:
-        if device_file["device information"]["type"] == "spine":
+        if device_file["site"] == site and device_file["device information"]["type"] == "spine":
             neighbors.append(device_file)
 
     for neighbor in neighbors:
@@ -87,7 +87,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
     neighbors = []
 
     for device_file in devices_file:
-        if device_file["device information"]["type"] == "spine":
+        if device_file["site"] == selected_site["name"] and device_file["device information"]["type"] == "spine":
             neighbors.append(device_file)
 
     device_config_id = selected_device["device information"]["id"]
