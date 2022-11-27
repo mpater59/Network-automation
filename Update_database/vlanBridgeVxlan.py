@@ -1,5 +1,8 @@
 import re
 
+from other import check_if_exists
+from other import key_exists
+
 
 def updateVLAN(configuration):
     vlan = {"vlan": {}}
@@ -115,7 +118,10 @@ def updateVxLAN(configuration):
                 elif re.search("^  vxlan-remoteip [\w]", configuration[i + iter_skip]):
                     temp_split = configuration[i + iter_skip].split(" ")
                     remoteip = temp_split[3]
-                    vxlan["vxlan"]["vnis"][vni]["remoteip"] = remoteip
+                    if key_exists(vxlan, "vxlan", "vnis", vni, "remoteip") is False:
+                        vxlan["vxlan"]["vnis"][vni]["remoteip"] = []
+                    if check_if_exists(remoteip, vxlan["vxlan"]["vnis"][vni]["remoteip"]) is False:
+                        vxlan["vxlan"]["vnis"][vni]["remoteip"].append(remoteip)
                 iter_skip += 1
                 if not re.search("^  .*", configuration[i + iter_skip]):
                     if configuration[i + iter_skip] != '':
