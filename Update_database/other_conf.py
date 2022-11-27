@@ -16,5 +16,5 @@ def updateStaticRoute(configuration):
     for i, line in enumerate(configuration):
         if re.search("^ip route \S+", line):
             temp_split = line.split(" ")
-            static_route[temp_split[2]] = {"via": temp_split[3]}
+            static_route["static routes"][temp_split[2]] = {"via": temp_split[3]}
     return static_route
