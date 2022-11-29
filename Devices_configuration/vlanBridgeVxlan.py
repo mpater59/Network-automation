@@ -22,7 +22,8 @@ def vlan(config, db_config=None, expand=False):
                             if check_if_exists(port, db_config["bridge"]["vids"][dbVlan]["bridge access"]):
                                 db_config["bridge"]["ports"].remove(port)
                     if key_exists(db_config, "bridge", "vids", dbVlan, "bridge access"):
-                        db_config["vids"].pop(dbVlan)
+                        if key_exists(db_config, "vids", dbVlan):
+                            db_config["vids"].pop(dbVlan)
                     if key_exists(db_config, "vxlan", "vnis"):
                         for vni in db_config["vxlan"]["vnis"]:
                             if db_config["vxlan"]["vnis"][vni]["id"] == dbVlan:
