@@ -250,17 +250,6 @@ def vxlan(config, db_config=None, expand=False):
 
                 # config remoteip
                 if key_exists(vni, "remoteip"):
-                    if key_exists(db_vni, "remoteip") and vni["remoteip"] != db_vni["remoteip"]:
-                        commands.append(f"net del vxlan {vni_id} vxlan remoteip")
-                        commands.append(f"net add vxlan {vni_id} vxlan remoteip {vni['remoteip']}")
-                    elif db_vni is None:
-                        commands.append(f"net add vxlan {vni_id} vxlan remoteip {vni['remoteip']}")
-                else:
-                    if key_exists(db_vni, "remoteip") and expand is False:
-                        commands.append(f"net del vxlan {vni_id} vxlan remoteip")
-
-                # config remoteip
-                if key_exists(vni, "remoteip"):
                     if key_exists(db_vni, "remoteip") and expand is False:
                         for remote_ip in db_vni["remoteip"]:
                             if check_if_exists(remote_ip, vni["remoteip"]) is False:
