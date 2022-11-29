@@ -12,6 +12,7 @@ from Devices_configuration.vlanBridgeVxlan import vlan
 from Devices_configuration.vlanBridgeVxlan import bridge
 from Devices_configuration.vlanBridgeVxlan import vxlan
 from Devices_configuration.other_conf import hostname
+from Devices_configuration.other_conf import static_routes
 
 
 stream = open('database_env.yaml', 'r')
@@ -82,6 +83,9 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
         commands.append(command_cli)
     # loopback configuration
     for command_cli in interfaces.loopback(config, db_config, expand):
+        commands.append(command_cli)
+    # static route configuration
+    for command_cli in static_routes(config, db_config, expand):
         commands.append(command_cli)
     # ospf configuration
     for command_cli in ospf(config, db_config, expand):

@@ -15,7 +15,8 @@ def del_bgp_neighbor(neighbor, config):
         commands.append(f"net del bgp neighbor {neighbor} route-reflector-client")
     if key_exists(config, "evpn rrc") and config["evpn rrc"] is True:
         commands.append(f"net del bgp l2vpn evpn neighbor {neighbor} route-reflector-client")
-
+    if key_exists(config, "next-hop-self") and config["next-hop-self"] is True:
+        commands.append(f"net del bgp neighbor {neighbor} next-hop-self")
     return commands
 
 
@@ -73,7 +74,7 @@ def config_neighbors(bgp_config, db_bgp_config, expand, reset_bgp):
         else:
             if key_exists(db_neighbor, "activate evpn") and expand is False and reset_bgp is False:
                 if db_neighbor["activate evpn"] is True:
-                    commands.append(f"net add bgp l2vpn evpn neighbor {neigh} activate")
+                    commands.append(f"net del bgp l2vpn evpn neighbor {neigh} activate")
 
         # config rrc
         if key_exists(neighbor, "rrc"):
@@ -103,7 +104,22 @@ def config_neighbors(bgp_config, db_bgp_config, expand, reset_bgp):
         else:
             if key_exists(db_neighbor, "evpn rrc") and expand is False and reset_bgp is False:
                 if db_neighbor["evpn rrc"] is True:
-                    commands.append(f"net add bgp neighbor {neigh} route-reflector-client")
+                    commands.append(f"net del bgp l2vpn evpn neighbor {neigh} route-reflector-client")
+
+        # config next-hop-self
+        if key_exists(neighbor, "next-hop-self"):
+            if key_exists(db_neighbor, "next-hop-self") and db_neighbor["next-hop-self"] != neighbor["next-hop-self"]:
+                if neighbor["next-hop-self"] is True:
+                    commands.append(f"net add bgp neighbor {neigh} next-hop-self")
+                elif neighbor["next-hop-self"] is False:
+                    commands.append(f"net del bgp neighbor {neigh} next-hop-self")
+            elif db_neighbor is None or reset_bgp is True:
+                if neighbor["next-hop-self"] is True:
+                    commands.append(f"net add bgp neighbor {neigh} next-hop-self")
+        else:
+            if key_exists(db_neighbor, "next-hop-self") and expand is False and reset_bgp is False:
+                if db_neighbor["next-hop-self"] is True:
+                    commands.append(f"net del bgp neighbor {neigh} next-hop-self")
 
     return commands
 
@@ -170,6 +186,24 @@ def bgp(config, db_config=None, expand=False):
             if key_exists(db_bgp_config, "advertise-all-vni") and expand is False and reset_bgp is False:
                 if db_bgp_config["advertise-all-vni"] is False:
                     commands.append("net del bgp l2vpn evpn advertise-all-vni")
+
+        # config networks
+        if key_exists(bgp_config, "networks"):
+            if key_exists(db_bgp_config, "networks") and expand is False:
+                for network in db_bgp_config["networks"]:
+                    if check_if_exists(network, bgp_config["networks"]) is False:
+                        commands.append(f'net del bgp network {network}')
+
+            for network in bgp_config["networks"]:
+                if key_exists(db_bgp_config, "networks"):
+                    if check_if_exists(network, db_bgp_config["networks"]) is False:
+                        commands.append(f'net add bgp network {network}')
+                else:
+                    commands.append(f'net add bgp network {network}')
+        else:
+            if key_exists(db_bgp_config, "networks") and expand is False:
+                for network in db_bgp_config["networks"]:
+                    commands.append(f'net del bgp network {network}')
     else:
         if key_exists(db_config, "bgp", "as") and expand is False:
             commands.append(f"net del bgp autonomous-system {db_config['bgp']['as']}")
