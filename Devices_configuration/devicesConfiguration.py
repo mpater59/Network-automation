@@ -121,7 +121,10 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
                 break
             except paramiko.buffered_pipe.PipeTimeout:
                 print(f"Timeout - {trial + 1}")
+                break
             except socket.timeout:
                 print(f"Timeout - {trial + 1}")
+                break
             except netmiko.ssh_exception.NetmikoTimeoutException:
                 print(f"Timeout - {trial + 1}")
+                break
