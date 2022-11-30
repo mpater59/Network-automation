@@ -1,5 +1,8 @@
 import re
 
+from other import key_exists
+from other import check_if_exists
+
 
 def updateInterfaces(configuration):
     interfaces = {"interfaces": {}}
@@ -51,3 +54,23 @@ def updateLoopback(configuration):
         if loopback_break is True:
             break
     return loopback
+
+
+def updateInterfacesAgain(config):
+    if key_exists(config, "interfaces"):
+        temp_int = []
+        for interface in config["interfaces"]:
+            temp_int.append(interface)
+        for interface in temp_int:
+            int_exists = True
+            if key_exists(config, "interfaces", interface, "ip address") is False:
+                if key_exists(config, "bridge", "ports"):
+                    if check_if_exists(interface, config["bridge"]["ports"]) is False:
+                        int_exists = False
+                else:
+                    int_exists = False
+            if int_exists is False:
+                config["interfaces"].pop(interface, None)
+                if key_exists(config, "ospf", "interfaces", interface):
+                    config["ospf"]["interfaces"].pop(interface, None)
+    return config

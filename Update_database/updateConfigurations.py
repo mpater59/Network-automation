@@ -16,6 +16,7 @@ from Update_database.vlanBridgeVxlan import updateBridge
 from Update_database.vlanBridgeVxlan import updateVxLAN
 from Update_database.other_conf import updateHostname
 from Update_database.other_conf import updateStaticRoute
+from Update_database.interfaces import updateInterfacesAgain
 
 from other import key_exists
 from other import check_if_exists
@@ -106,6 +107,7 @@ def update(site, devices=None, status=None, new_documents=False):
                 configuration["configuration"].update(updateVLAN(output_list))
                 configuration["configuration"].update(updateBridge(output_list))
                 configuration["configuration"].update(updateVxLAN(output_list))
+                configuration["configuration"] = updateInterfacesAgain(configuration["configuration"])
                 connection.disconnect()
 
                 query = {"active": True, "device hostname": device["hostname"], "site": device["site"]}
