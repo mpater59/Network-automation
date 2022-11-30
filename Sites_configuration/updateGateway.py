@@ -391,24 +391,27 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
 
                         if key_exists(neigh, "remote"):
                             if neigh["remote"] != site_as:
-                                neigh["remote"] = site_as
+                                db_config["bgp"]["neighbors"][neigh_id]["remote"] = site_as
                         else:
-                            neigh["remote"] = site_as
+                            db_config["bgp"]["neighbors"][neigh_id]["remote"] = site_as
                         if key_exists(neigh, "update"):
                             if neigh["update"] != "lo":
-                                neigh["update"] = "lo"
+                                db_config["bgp"]["neighbors"][neigh_id]["update"] = "lo"
                         else:
-                            neigh["update"] = "lo"
+                            db_config["bgp"]["neighbors"][neigh_id]["update"] = "lo"
+                        db_config["bgp"]["neighbors"][neigh_id]["activate evpn"] = True
                         break
                 if neigh_exists is False:
                     db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+                    db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
             else:
                 db_config["bgp"]["neighbors"] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+                db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
     elif active is True:
         db_config["bgp"] = {}
         db_config["bgp"]["as"] = site_as
@@ -420,6 +423,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+            db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
     else:
         config["bgp"] = {}
         config["bgp"]["as"] = site_as
@@ -431,6 +435,7 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+            config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
 
     # update gateway bgp
     if db_config is not None:
@@ -439,12 +444,14 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
             bgp_neighbors.append(bgp_id_neigh)
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = as_id
+            db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
     else:
         for ip_addr, as_id in zip(neigh_as_ip_addr, neigh_as):
             bgp_id_neigh = f'{ip_addr}'
             bgp_neighbors.append(bgp_id_neigh)
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = as_id
+            config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
 
     # update bgp (expand=False)
     if expand is False and key_exists(db_config, "bgp", "neighbors"):

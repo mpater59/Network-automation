@@ -278,11 +278,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
                 db_config["bgp"]["router-id"] = device_id
         else:
             db_config["bgp"]["router-id"] = device_id
-        if key_exists(db_config, "bgp", "advertise-all-vni"):
-            if db_config["bgp"]["advertise-all-vni"] is not True:
-                db_config["bgp"]["advertise-all-vni"] = True
-        else:
-            db_config["bgp"]["advertise-all-vni"] = True
+        db_config["bgp"]["advertise-all-vni"] = True
         for neighbor in neighbors:
             neigh_exists = False
             bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
@@ -295,29 +291,27 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
 
                         if key_exists(neigh, "remote"):
                             if neigh["remote"] != site_as:
-                                neigh["remote"] = site_as
+                                db_config["bgp"]["neighbors"][neigh_id]["remote"] = site_as
                         else:
-                            neigh["remote"] = site_as
+                            db_config["bgp"]["neighbors"][neigh_id]["remote"] = site_as
                         if key_exists(neigh, "update"):
                             if neigh["update"] != "lo":
-                                neigh["update"] = "lo"
+                                db_config["bgp"]["neighbors"][neigh_id]["update"] = "lo"
                         else:
-                            neigh["update"] = "lo"
-                        if key_exists(neigh, "activate evpn"):
-                            if neigh["activate evpn"] is not True:
-                                neigh["activate evpn"] = True
-                        else:
-                            neigh["activate evpn"] = True
+                            db_config["bgp"]["neighbors"][neigh_id]["update"] = "lo"
+                        db_config["bgp"]["neighbors"][neigh_id]["activate evpn"] = True
                         break
                 if neigh_exists is False:
                     db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+                    db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
             else:
                 db_config["bgp"]["neighbors"] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+                db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
     elif active is True:
         db_config["bgp"] = {}
         db_config["bgp"]["as"] = site_as
@@ -329,6 +323,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+            db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
     else:
         config["bgp"] = {}
         config["bgp"]["as"] = site_as
@@ -340,6 +335,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
+            config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
 
     # update bgp (expand=False)
     if expand is False and key_exists(db_config, "bgp", "neighbors"):

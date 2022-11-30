@@ -295,47 +295,32 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
 
                         if key_exists(neigh, "remote"):
                             if neigh["remote"] != site_as:
-                                neigh["remote"] = site_as
+                                db_config["bgp"]["neighbors"][neigh_id]["remote"] = site_as
                         else:
                             neigh["remote"] = site_as
                         if key_exists(neigh, "update"):
                             if neigh["update"] != "lo":
-                                neigh["update"] = "lo"
+                                db_config["bgp"]["neighbors"][neigh_id]["update"] = "lo"
                         else:
-                            neigh["update"] = "lo"
-                        if neighbor["device information"]["type"] == "leaf":
-                            if key_exists(neigh, "activate evpn"):
-                                if neigh["activate evpn"] is not True:
-                                    neigh["activate evpn"] = True
-                            else:
-                                neigh["activate evpn"] = True
-                            if key_exists(neigh, "evpn rrc"):
-                                if neigh["evpn rrc"] is not True:
-                                    neigh["evpn rrc"] = True
-                            else:
-                                neigh["evpn rrc"] = True
-                        if key_exists(neigh, "rrc"):
-                            if neigh["rrc"] is not True:
-                                neigh["rrc"] = True
-                        else:
-                            neigh["rrc"] = True
+                            db_config["bgp"]["neighbors"][neigh_id]["update"] = "lo"
+                        db_config["bgp"]["neighbors"][neigh_id]["activate evpn"] = True
+                        db_config["bgp"]["neighbors"][neigh_id]["evpn rrc"] = True
+                        db_config["bgp"]["neighbors"][neigh_id]["rrc"] = True
                         break
                 if neigh_exists is False:
                     db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
-                    if neighbor["device information"]["type"] == "leaf":
-                        db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
-                        db_config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
+                    db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+                    db_config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["rrc"] = True
             else:
                 db_config["bgp"]["neighbors"] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
-                if neighbor["device information"]["type"] == "leaf":
-                    db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
-                    db_config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
+                db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+                db_config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["rrc"] = True
     elif active is True:
         db_config["bgp"] = {}
@@ -351,9 +336,8 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
             db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
-            if neighbor["device information"]["type"] == "leaf":
-                db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
-                db_config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
+            db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+            db_config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
             db_config["bgp"]["neighbors"][bgp_id_neigh]["rrc"] = True
     else:
         config["bgp"] = {}
@@ -369,9 +353,8 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
             config["bgp"]["neighbors"][bgp_id_neigh] = {}
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
-            if neighbor["device information"]["type"] == "leaf":
-                config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
-                config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
+            config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+            config["bgp"]["neighbors"][bgp_id_neigh]["evpn rrc"] = True
             config["bgp"]["neighbors"][bgp_id_neigh]["rrc"] = True
 
     # update spine bgp
