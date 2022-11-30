@@ -224,18 +224,18 @@ def vxlan(config, db_config=None, expand=False):
                 # config bridge learning
                 if key_exists(vni, "bridge learning"):
                     if key_exists(db_vni, "bridge learning") and vni["bridge learning"] != db_vni["bridge learning"]:
-                        if vni["bridge learning"] is True:
-                            commands.append(f"net del vxlan {vni_id} bridge learning off")
-                        else:
+                        if vni["bridge learning"] is False:
                             commands.append(f"net add vxlan {vni_id} bridge learning off")
+                        else:
+                            commands.append(f"net del vxlan {vni_id} bridge learning off")
                     elif db_vni is None:
-                        if vni["bridge learning"] is True:
-                            commands.append(f"net del vxlan {vni_id} bridge learning off")
-                        else:
+                        if vni["bridge learning"] is False:
                             commands.append(f"net add vxlan {vni_id} bridge learning off")
+                        else:
+                            commands.append(f"net del vxlan {vni_id} bridge learning off")
                 else:
                     if key_exists(db_vni, "bridge learning") and expand is False:
-                        commands.append(f"net add vxlan {vni_id} bridge learning off")
+                        commands.append(f"net del vxlan {vni_id} bridge learning off")
 
                 # config local-tunnelip
                 if key_exists(vni, "local-tunnelip"):
