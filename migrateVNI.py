@@ -154,7 +154,7 @@ def migrate_vni(source_site, source_device, destination_site, destination_device
 
     update_device(destination_site, destination_device, soft_update)
 
-    #update(destination_site, destination_device, status)
+    update(destination_site, destination_device, status)
 
     stream = open("devices.yaml", 'r')
     devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)

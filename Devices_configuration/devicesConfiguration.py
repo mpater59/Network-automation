@@ -114,7 +114,6 @@ def devicesConfiguration(site, device, config, soft_config_change=False, expand=
 
         for trial in range(5):
             try:
-                break
                 connection = ConnectHandler(**device_connection)
                 output = connection.send_config_set(commands)
                 print(output)
