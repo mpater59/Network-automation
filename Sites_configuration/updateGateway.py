@@ -1,8 +1,8 @@
 import pymongo
 import yaml
 
-from other import key_exists
-from other import check_if_exists
+from Other.other import key_exists
+from Other.other import check_if_exists
 
 
 stream = open('database_env.yaml', 'r')
@@ -14,7 +14,7 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
-def get_neighbor_ports(selected_device, devices_file, site):
+def get_neighbor_ports(selected_device, site):
     neigh_ports = []
 
     stream = open("sites.yaml", 'r')
@@ -24,6 +24,13 @@ def get_neighbor_ports(selected_device, devices_file, site):
         if site_file["name"] == site:
             selected_site = site_file
             break
+    stream.close()
+
+    stream = open("devices.yaml", 'r')
+    devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
+    known_devices = []
+    for counter, device in enumerate(devices_temp):
+        known_devices.append(device)
     stream.close()
 
     if selected_site["name"] is None:
@@ -51,7 +58,7 @@ def get_neighbor_ports(selected_device, devices_file, site):
     site_id = selected_site["site id"]
 
     neighbors = []
-    for device_file in devices_file:
+    for device_file in known_devices:
         if device_file["site"] == site and device_file["device information"]["type"] == "spine":
             neighbors.append(device_file)
 
@@ -74,14 +81,7 @@ def get_neighbor_ports(selected_device, devices_file, site):
                     ip_addr += f'{char}/30'
             border_as_ip_addr.append(ip_addr)
 
-    for border, as_id in zip(border_as_ip_addr, neigh_as):
-        if key_exists(db_config, "interfaces"):
-            for interface in db_config["interfaces"]:
-                db_int = db_config["interfaces"][interface]
-                if key_exists(db_int, "ip address") and db_int["ip address"] == [border]:
-                    if check_if_exists(interface, neigh_ports) is False:
-                        neigh_ports.append({interface: {"as": as_id, "ip address": border}})
-
+    config_neighs = []
     for neighbor in neighbors:
         neigh_ip_addr = f'{site_id}.{neighbor["device information"]["id"]}.{200 + device_config_id}.2/30'
         if key_exists(db_config, "interfaces"):
@@ -90,6 +90,21 @@ def get_neighbor_ports(selected_device, devices_file, site):
                 if key_exists(db_int, "ip address") and db_int["ip address"] == [neigh_ip_addr]:
                     if check_if_exists(interface, neigh_ports) is False:
                         neigh_ports.append({interface: {"hostname": neighbor["hostname"]}})
+                        config_neighs.append(interface)
+    for border, as_id in zip(border_as_ip_addr, neigh_as):
+        if key_exists(db_config, "interfaces"):
+            for interface in db_config["interfaces"]:
+                db_int = db_config["interfaces"][interface]
+                if key_exists(db_int, "ip address") and db_int["ip address"] == [border]:
+                    if check_if_exists(interface, neigh_ports) is False:
+                        neigh_ports.append({interface: {"as": as_id, "ip address": border}})
+                        config_neighs.append(interface)
+    if key_exists(db_config, "interfaces"):
+        for interface in db_config["interfaces"]:
+            db_int = db_config["interfaces"][interface]
+            if key_exists(db_int, "ip address"):
+                if check_if_exists(interface, config_neighs) is False:
+                    neigh_ports.append({interface: {"ip address": db_int["ip address"]}})
 
     return neigh_ports
 
@@ -137,8 +152,10 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
     # update hostname
     if key_exists(db_config, "hostname") is False:
         if db_config is not None:
-            db_config["hostname"] = f"{selected_device['hostname']}"
-        config["hostname"] = f"{selected_device['hostname']}"
+            db_config["hostname"] = f"{selected_device['site']}-{selected_device['hostname']}"
+    elif expand is False:
+        db_config["hostname"] = f"{selected_device['site']}-{selected_device['hostname']}"
+    config["hostname"] = f"{selected_device['site']}-{selected_device['hostname']}"
 
     # update interfaces
     taken_ports = []

@@ -1,6 +1,5 @@
-from other import compare_list
-from other import key_exists
-from other import check_if_exists
+from Other.other import key_exists
+from Other.other import check_if_exists
 
 
 def interfaces(config, db_config=None, expand=False):

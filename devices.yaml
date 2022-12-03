@@ -36,6 +36,13 @@ device information:
   id: 1
 site: test1
 number of ports: 6
+vxlan:
+- vni: 10010
+  vid: 10
+  port: swp3
+- vni: 10020
+  vid: 20
+  port: swp4
 ---
 hostname: Leaf2
 machine type: linux
@@ -49,6 +56,10 @@ device information:
   id: 2
 site: test1
 number of ports: 6
+vxlan:
+- vni: 10020
+  vid: 10
+  port: swp4
 ---
 hostname: Leaf3
 machine type: linux
@@ -62,6 +73,10 @@ device information:
   id: 3
 site: test1
 number of ports: 6
+vxlan:
+- vni: 10010
+  vid: 10
+  port: swp3
 ---
 hostname: Leaf4
 machine type: linux
@@ -75,6 +90,13 @@ device information:
   id: 4
 site: test1
 number of ports: 6
+vxlan:
+- vni: 10010
+  vid: 10
+  port: swp3
+- vni: 10020
+  vid: 20
+  port: swp4
 ---
 machine type: linux
 ip address: 10.0.10.201
@@ -118,6 +140,10 @@ site: test2
 device information:
   type: leaf
   id: 1
+vxlan:
+- vni: 10010
+  vid: 10
+  port: swp2
 ---
 machine type: linux
 ip address: 10.0.20.102
@@ -131,6 +157,10 @@ site: test2
 device information:
   type: leaf
   id: 2
+vxlan:
+- vni: 10020
+  vid: 10
+  port: swp2
 ---
 machine type: linux
 ip address: 10.0.20.201

@@ -2,8 +2,8 @@ import argparse
 import pymongo
 import yaml
 
-from other import check_if_exists
-from other import key_exists
+from Other.other import check_if_exists
+from Other.other import key_exists
 from Sites_configuration.updateDevice import update_device
 from Update_database.updateConfigurations import update
 from Sites_configuration.updateSpine import get_neighbor_ports as spine_ports
@@ -20,7 +20,7 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
-def add_device(site, devices_file, status=None, soft_update=False, expand=False):
+def add_device(site, devices_file, status=None, soft_update=False):
 
     devices = None
     if isinstance(devices_file, str):
@@ -154,24 +154,32 @@ def add_device(site, devices_file, status=None, soft_update=False, expand=False)
             else:
                 merged_hostnames += f",{db_final['hostname']}"
 
-            update_device(site, db_final["hostname"], soft_update, expand)
+            update_device(site, db_final["hostname"], soft_update)
 
     update(site, merged_hostnames, status)
 
-    for db_final in db_finals:
+    stream = open("devices.yaml", 'r')
+    selected_devices = []
+    devices_temp = yaml.load_all(stream, Loader=yaml.Loader)
+    for device_temp in devices_temp:
+        if device_temp['site'] == site:
+            selected_devices.append(device_temp)
+    stream.close()
+
+    for db_final in selected_devices:
         if db_final["site"] == site:
             if db_final["device information"]["type"] == "spine":
-                ports = spine_ports(db_final, db_finals, site)
+                ports = spine_ports(db_final, site)
                 print(f"Configured ports for device {db_final['hostname']}; site {site}")
                 for port in ports:
                     print(port)
             elif db_final["device information"]["type"] == "leaf":
-                ports = leaf_ports(db_final, db_finals, site)
+                ports = leaf_ports(db_final, site)
                 print(f"Configured ports for device {db_final['hostname']}; site {site}")
                 for port in ports:
                     print(port)
             elif db_final["device information"]["type"] == "gateway":
-                ports = gw_ports(db_final, db_finals, site)
+                ports = gw_ports(db_final, site)
                 print(f"Configured ports for device {db_final['hostname']}; site {site}")
                 for port in ports:
                     print(port)
@@ -186,9 +194,7 @@ parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status that will be set for this update in DB")
 parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, action='store_true',
                     help="Apply change without deleting existing configuration on devices (default false)")
-parser.add_argument("-ex", "--expand", dest="expand", default=False, action='store_true',
-                    help="Add changes on existing configuration (default false)")
 
 args = parser.parse_args()
 
-add_device(args.site, args.devices_file, args.status_text, args.soft_update, args.expand)
+add_device(args.site, args.devices_file, args.status_text, args.soft_update)

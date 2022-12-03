@@ -2,11 +2,11 @@ import argparse
 import pymongo
 import yaml
 
-from Update_database.updateConfigurations import update
+from Other.other import check_if_exists
+from Other.other import key_exists
 from Sites_configuration.updateDevice import update_device
-from Sites_configuration.updateSpine import get_neighbor_ports as spine_ports
+from Update_database.updateConfigurations import update
 from Sites_configuration.updateLeaf import get_neighbor_ports as leaf_ports
-from Sites_configuration.updateGateway import get_neighbor_ports as gw_ports
 
 
 stream = open("database_env.yaml", 'r')
@@ -18,14 +18,14 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
-def update_devices(site, devices, status=None, soft_update=True):
+def del_vni(site, devices, vnis, status=None, soft_update=False):
 
     if site is None:
         print("Enter name of site!")
         exit()
     else:
         query = {"site": site}
-        if col_configs.count_documents(query) == 0 and soft_update is True:
+        if col_configs.count_documents(query) == 0:
             print("Can't find this site in DB!")
             exit()
 
@@ -43,7 +43,7 @@ def update_devices(site, devices, status=None, soft_update=True):
         for split_device in temp_split_devices:
             for known_device in known_devices:
                 if known_device["site"] == site and known_device["hostname"] == split_device:
-                    selected_devices.append(known_device["hostname"])
+                    selected_devices.append(known_device)
                     split_devices.remove(split_device)
                     break
         if split_devices != []:
@@ -52,36 +52,45 @@ def update_devices(site, devices, status=None, soft_update=True):
                 print(split_device)
     else:
         for known_device in known_devices:
-            if known_device["site"] == site:
-                selected_devices.append(known_device["hostname"])
+            if known_device["site"] == site and known_device['device information']['type'] == 'leaf':
+                selected_devices.append(known_device)
 
-    for selected_device in selected_devices:
-        update_device(site, selected_device, soft_update)
+    selected_vnis = vnis.split(',')
 
-    update(site, devices, status)
+    for device in selected_devices:
+        for db_device in known_devices:
+            if db_device['site'] == device['site'] and db_device['hostname'] == device['hostname']:
+                if key_exists(device, 'vxlan'):
+                    temp_vnis = []
+                    for vni in device['vxlan']:
+                        temp_vnis.append(vni)
+                    for vni in temp_vnis:
+                        if key_exists(vni, 'vni') and check_if_exists(str(vni['vni']), selected_vnis):
+                            device['vxlan'].remove(vni)
+                break
 
-    stream = open("devices.yaml", 'r')
-    devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
-    known_devices = []
-    for device in devices_temp:
-        known_devices.append(device)
-    stream.close()
+    with open("devices.yaml", "w") as stream:
+        yaml.safe_dump_all(known_devices, stream, default_flow_style=False, sort_keys=False)
 
-    for device_db in known_devices:
-        if device_db["site"] == site:
-            if device_db["device information"]["type"] == "spine":
-                ports = spine_ports(device_db, site)
-                print(f"Configured ports for device {device_db['hostname']}; site {site}")
-                for port in ports:
-                    print(port)
-            elif device_db["device information"]["type"] == "leaf":
-                ports = leaf_ports(device_db, site)
-                print(f"Configured ports for device {device_db['hostname']}; site {site}")
-                for port in ports:
-                    print(port)
-            elif device_db["device information"]["type"] == "gateway":
-                ports = gw_ports(device_db, site)
-                print(f"Configured ports for device {device_db['hostname']}; site {site}")
+    first_item = True
+    merged_hostnames = ''
+    for device in selected_devices:
+        if device["site"] == site:
+            if first_item is True:
+                merged_hostnames += device["hostname"]
+                first_item = False
+            else:
+                merged_hostnames += f",{device['hostname']}"
+
+            update_device(site, device["hostname"], soft_update)
+
+    update(site, merged_hostnames, status)
+
+    for db_device in selected_devices:
+        if db_device["site"] == site:
+            if db_device["device information"]["type"] == "leaf":
+                ports = leaf_ports(db_device, site)
+                print(f"Configured ports for device {db_device['hostname']}; site {site}")
                 for port in ports:
                     print(port)
 
@@ -89,8 +98,10 @@ def update_devices(site, devices, status=None, soft_update=True):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
-parser.add_argument("-d", "--devices", dest="devices",
+parser.add_argument("-d", "--device", dest="device", default=None,
                     help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
+parser.add_argument("-v", "--vni", dest="vni",
+                    help="Index of VNI, separate with ','")
 parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status that will be set for this update in DB")
 parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, action='store_true',
@@ -98,4 +109,4 @@ parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, a
 
 args = parser.parse_args()
 
-update_devices(args.site, args.devices, args.status_text, args.soft_update)
+del_vni(args.site, args.device, args.vni, args.status_text, args.soft_update)

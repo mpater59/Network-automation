@@ -18,8 +18,8 @@ from Update_database.other_conf import updateHostname
 from Update_database.other_conf import updateStaticRoute
 from Update_database.interfaces import updateInterfacesAgain
 
-from other import key_exists
-from other import check_if_exists
+from Other.other import key_exists
+from Other.other import check_if_exists
 
 
 stream = open("database_env.yaml", 'r')

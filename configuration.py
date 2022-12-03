@@ -4,7 +4,7 @@ import yaml
 from bson import objectid
 
 from Devices_configuration.devicesConfiguration import devicesConfiguration
-from other import key_exists
+from Other.other import key_exists
 from Update_database.updateConfigurations import update
 
 

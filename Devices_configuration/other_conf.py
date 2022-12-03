@@ -1,5 +1,5 @@
-from other import key_exists
-from other import check_if_exists
+from Other.other import key_exists
+from Other.other import check_if_exists
 
 
 def hostname(config, db_config=None, expand=False):

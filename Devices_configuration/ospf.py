@@ -1,13 +1,20 @@
-from other import compare_list
-from other import key_exists
-from other import check_if_exists
+from Other.other import key_exists
+from Other.other import check_if_exists
 
 
-def del_ospf(interface, interface_type):
+def del_ospf(interface, interface_type, db_config=None):
     commands = []
-    commands.append(f"net del {interface_type} {interface} ospf area")
-    commands.append(f"net del {interface_type} {interface} ospf network")
-    commands.append(f"net del ospf passive-interface {interface}")
+    if key_exists(db_config, "interfaces", interface):
+        db_int = db_config['interfaces'][interface]
+    else:
+        db_int = None
+
+    if key_exists(db_int, 'area'):
+        commands.append(f"net del {interface_type} {interface} ospf area")
+    if key_exists(db_int, 'network'):
+        commands.append(f"net del {interface_type} {interface} ospf network")
+    if interface_type == 'interface' and key_exists(db_int, 'passive interface'):
+        commands.append(f"net del ospf passive-interface {interface}")
     return commands
 
 
@@ -45,7 +52,7 @@ def ospf(config, db_config=None, expand=False):
                             interface_type = "loopback"
                         else:
                             interface_type = "interface"
-                        for commands_cli in del_ospf(dbInt, interface_type):
+                        for commands_cli in del_ospf(dbInt, interface_type, db_ospf_config):
                             commands.append(commands_cli)
 
             for int in ospf_config.get("interfaces"):
@@ -105,7 +112,7 @@ def ospf(config, db_config=None, expand=False):
                         interface_type = "loopback"
                     else:
                         interface_type = "interface"
-                    for commands_cli in del_ospf(dbInt, interface_type):
+                    for commands_cli in del_ospf(dbInt, interface_type, db_ospf_config):
                         commands.append(commands_cli)
     else:
         if key_exists(db_config, "ospf") and expand is False:
