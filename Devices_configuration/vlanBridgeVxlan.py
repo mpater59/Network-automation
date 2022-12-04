@@ -115,18 +115,18 @@ def bridge(config, db_config=None, expand=False):
             if key_exists(db_bridge_config, "vids") and expand is False:
                 db_vids = db_bridge_config["vids"]
                 for dbVid in db_vids:
-                    if check_if_exists(dbVid, list(vids.keys())) is False:
+                    if check_if_exists(str(dbVid), list(vids.keys())) is False:
                         for command_cli in del_vid(db_vids, dbVid):
                             commands.append(command_cli)
             else:
                 db_vids = None
 
             for vid in vids:
-                if db_vids is not None and check_if_exists(vid, list(db_vids.keys())) is False:
+                if db_vids is not None and check_if_exists(str(vid), list(db_vids.keys())) is False:
                     commands.append(f"net add bridge bridge vids {vid}")
 
                 # config bridge access
-                if key_exists(vids, vid, "bridge access"):
+                if key_exists(vids, str(vid), "bridge access"):
                     interfaces = vids[vid]["bridge access"]
 
                     if key_exists(db_vids, vid, "bridge access") and expand is False:
