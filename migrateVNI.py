@@ -1,4 +1,6 @@
 import argparse
+import copy
+
 import pymongo
 import yaml
 
@@ -117,7 +119,9 @@ def migrate_vni(source_site, source_device, destination_site, destination_device
             if check_if_exists(vid, multiple_vids) is False:
                 multiple_vids.append(vid)
 
-    for vxlan in vxlan_migrate:
+    cp_vxlan_migrate = copy.deepcopy(vxlan_migrate)
+
+    for vxlan in cp_vxlan_migrate:
         if key_exists(vxlan, 'vid') and check_if_exists(vxlan['vid'], multiple_vids) is False:
             vxlan.pop('vid', None)
             if key_exists(vxlan, 'port'):
@@ -125,7 +129,7 @@ def migrate_vni(source_site, source_device, destination_site, destination_device
 
     for vid in multiple_vids:
         new_vid = 10
-        for vxlan in vxlan_migrate:
+        for vxlan in cp_vxlan_migrate:
             if key_exists(vxlan, 'vid') and vxlan['vid'] == vid:
                 while True:
                     if new_vid > 4096:
@@ -139,15 +143,8 @@ def migrate_vni(source_site, source_device, destination_site, destination_device
                     new_vid += 10
         d_taken_vids.append(new_vid)
 
-    for vxlan in vxlan_migrate:
+    for vxlan in cp_vxlan_migrate:
         d_device['vxlan'].append(vxlan)
-
-    selected_device = None
-    for device in known_devices:
-        if device['hostname'] == destination_device and device['site'] == destination_site:
-            device['vxlan'] = d_device['vxlan']
-            selected_device = device
-            break
 
     with open("devices.yaml", "w") as stream:
         yaml.safe_dump_all(known_devices, stream, default_flow_style=False, sort_keys=False)
