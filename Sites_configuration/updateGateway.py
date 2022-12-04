@@ -315,6 +315,15 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
     else:
         config["loopback"] = {"ip address": f'{device_id}/32'}
 
+    # update static routes
+    if key_exists(db_config, "static routes"):
+        if db_config['static routes'] != [{'subnet': f'1.1.{site_id}.0/24', 'via': 'Null0'}]:
+            db_config['static routes'] = [{'subnet': f'1.1.{site_id}.0/24', 'via': 'Null0'}]
+    elif active is True:
+        db_config['static routes'] = [{'subnet': f'1.1.{site_id}.0/24', 'via': 'Null0'}]
+    else:
+        config['static routes'] = [{'subnet': f'1.1.{site_id}.0/24', 'via': 'Null0'}]
+
     # update ospf
     if key_exists(db_config, "ospf"):
         if key_exists(db_config, "ospf", "router-id"):
@@ -417,18 +426,26 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
                         else:
                             db_config["bgp"]["neighbors"][neigh_id]["update"] = "lo"
                         db_config["bgp"]["neighbors"][neigh_id]["activate evpn"] = True
+                        db_config["bgp"]["neighbors"][neigh_id]["next-hop-self"] = True
                         break
                 if neigh_exists is False:
                     db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
                     db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+                    db_config["bgp"]["neighbors"][bgp_id_neigh]["next-hop-self"] = True
             else:
                 db_config["bgp"]["neighbors"] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh] = {}
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
                 db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+                db_config["bgp"]["neighbors"][bgp_id_neigh]["next-hop-self"] = True
+        if key_exists(db_config, "bgp", "networks"):
+            if check_if_exists(f'1.1.{site_id}.0/24', db_config['bgp']['networks']) is False:
+                db_config['bgp']['networks'].append(f'1.1.{site_id}.0/24')
+        else:
+            db_config['bgp']['networks'] = [f'1.1.{site_id}.0/24']
     elif active is True:
         db_config["bgp"] = {}
         db_config["bgp"]["as"] = site_as
@@ -441,6 +458,8 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
             db_config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             db_config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
             db_config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+            db_config["bgp"]["neighbors"][bgp_id_neigh]["next-hop-self"] = True
+        db_config['bgp']['networks'] = [f'1.1.{site_id}.0/24']
     else:
         config["bgp"] = {}
         config["bgp"]["as"] = site_as
@@ -453,6 +472,8 @@ def update_gateway(selected_device, devices_file, selected_site, db_config=None,
             config["bgp"]["neighbors"][bgp_id_neigh]["remote"] = site_as
             config["bgp"]["neighbors"][bgp_id_neigh]["update"] = "lo"
             config["bgp"]["neighbors"][bgp_id_neigh]["activate evpn"] = True
+            config["bgp"]["neighbors"][bgp_id_neigh]["next-hop-self"] = True
+        config['bgp']['networks'] = [f'1.1.{site_id}.0/24']
 
     # update gateway bgp
     if db_config is not None:

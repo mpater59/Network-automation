@@ -327,6 +327,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
         db_config["bgp"] = {}
         db_config["bgp"]["as"] = site_as
         db_config["bgp"]["router-id"] = device_id
+        db_config["bgp"]["advertise-all-vni"] = True
         db_config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
             bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
@@ -339,6 +340,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
         config["bgp"] = {}
         config["bgp"]["as"] = site_as
         config["bgp"]["router-id"] = device_id
+        config["bgp"]["advertise-all-vni"] = True
         config["bgp"]["neighbors"] = {}
         for neighbor in neighbors:
             bgp_id_neigh = f'1.1.{site_id}.{neighbor["device information"]["id"]}'
