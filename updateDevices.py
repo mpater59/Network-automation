@@ -56,7 +56,7 @@ def update_devices(site, devices, status=None, soft_update=True):
                 selected_devices.append(known_device["hostname"])
 
     for selected_device in selected_devices:
-        update_device(site, selected_device, soft_update)
+        update_device(site, selected_device, status, soft_update)
 
     update(site, devices, status)
 

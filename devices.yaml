@@ -92,11 +92,7 @@ site: test1
 number of ports: 6
 vxlan:
 - vni: 10010
-  vid: 10
-  port: swp3
 - vni: 10020
-  vid: 20
-  port: swp4
 ---
 machine type: linux
 ip address: 10.0.10.201
@@ -144,6 +140,9 @@ vxlan:
 - vni: 10010
   vid: 10
   port: swp2
+- vni: 10020
+  vid: 20
+  port: swp3
 ---
 machine type: linux
 ip address: 10.0.20.102

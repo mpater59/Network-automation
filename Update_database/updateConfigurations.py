@@ -45,7 +45,7 @@ def update(site, devices=None, status=None, new_documents=False):
         if devices is None and device_temp["site"] == site:
             selected_devices.append(device_temp)
         elif devices is not None:
-            if check_if_exists(device_temp["hostname"], split_devices) is True:
+            if check_if_exists(device_temp["hostname"], split_devices) is True and device_temp["site"] == site:
                 selected_devices.append(device_temp)
                 split_devices.remove(device_temp["hostname"])
     stream.close()
