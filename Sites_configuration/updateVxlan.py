@@ -145,13 +145,11 @@ def update_vxlan(selected_site, selected_device, config):
         if key_exists(config, "bridge", "ports") is False:
             config["bridge"]["ports"] = []
         config["bridge"]["ports"].append(swp)
-        config["bridge"]["ports"].append(vni_name)
         if key_exists(config, "bridge", "vids", vid) is False:
             config["bridge"]["vids"][vid] = {}
         if key_exists(config, "bridge", "vids", vid, "bridge access") is False:
             config["bridge"]["vids"][vid]["bridge access"] = []
         config["bridge"]["vids"][vid]["bridge access"].append(swp)
-        config["bridge"]["vids"][vid]["bridge access"].append(vni_name)
 
         if key_exists(config, "vxlan", "vnis", vni_name) is False:
             config["vxlan"]["vnis"][vni_name] = {}
