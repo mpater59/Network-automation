@@ -115,7 +115,7 @@ def bridge(config, db_config=None, expand=False):
             if key_exists(db_bridge_config, "vids") and expand is False:
                 db_vids = db_bridge_config["vids"]
                 for dbVid in db_vids:
-                    if check_if_exists(str(dbVid), list(vids.keys())) is False:
+                    if check_if_exists(int(dbVid), list(vids.keys())) is False:
                         for command_cli in del_vid(db_vids, dbVid):
                             commands.append(command_cli)
             else:
@@ -126,11 +126,11 @@ def bridge(config, db_config=None, expand=False):
                     commands.append(f"net add bridge bridge vids {vid}")
 
                 # config bridge access
-                if key_exists(vids, str(vid), "bridge access"):
+                if key_exists(vids, vid, "bridge access"):
                     interfaces = vids[vid]["bridge access"]
 
-                    if key_exists(db_vids, vid, "bridge access") and expand is False:
-                        db_interfaces = db_vids[vid]["bridge access"]
+                    if key_exists(db_vids, str(vid), "bridge access") and expand is False:
+                        db_interfaces = db_vids[str(vid)]["bridge access"]
 
                         for db_interface in db_interfaces:
                             if check_if_exists(db_interface, interfaces) is False:
@@ -143,7 +143,7 @@ def bridge(config, db_config=None, expand=False):
                             commands.append(f"net add interface {interface} bridge access {vid}")
                 else:
                     if key_exists(db_vids, vid, "bridge access") and expand is False:
-                        for interface in db_vids[vid]["bridge access"]:
+                        for interface in db_vids[str(vid)]["bridge access"]:
                             commands.append(f"net del interface {interface} bridge access {vid}")
         else:
             if key_exists(db_bridge_config, "vids") and expand is False:
@@ -200,7 +200,7 @@ def vxlan(config, db_config=None, expand=False):
 
                 # config id
                 if key_exists(vni, "id"):
-                    if key_exists(db_vni, "id") and vni["id"] != db_vni["id"]:
+                    if key_exists(db_vni, "id") and vni["id"] != int(db_vni["id"]):
                         commands.append(f"net del vxlan {vni_id} vxlan id")
                         commands.append(f"net add vxlan {vni_id} vxlan id {vni['id']}")
                     elif db_vni is None:
@@ -211,7 +211,7 @@ def vxlan(config, db_config=None, expand=False):
 
                 # config bridge access
                 if key_exists(vni, "bridge access"):
-                    if key_exists(db_vni, "bridge access") and vni["bridge access"] != db_vni["bridge access"]:
+                    if key_exists(db_vni, "bridge access") and vni["bridge access"] != int(db_vni["bridge access"]):
                         commands.append(f"net del vxlan {vni_id} bridge access")
                         commands.append(f"net add vxlan {vni_id} bridge access {vni['bridge access']}")
                     elif db_vni is None:
