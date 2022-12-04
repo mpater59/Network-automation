@@ -28,7 +28,7 @@ def check_if_exists(var_item, var_list):
     elif not isinstance(var_list, list):
         return False
     for item in var_list:
-        if item == var_item:
+        if str(item) == str(var_item):
             return True
         else:
             continue
