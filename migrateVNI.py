@@ -156,6 +156,15 @@ def migrate_vni(source_site, source_device, destination_site, destination_device
 
     update(destination_site, destination_device, status)
 
+    stream = open("devices.yaml", 'r')
+    devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
+    selected_device = None
+    for device in devices_temp:
+        if device["hostname"] == destination_device and device["site"] == destination_site:
+            selected_device = device
+            break
+    stream.close()
+
     ports = leaf_ports(selected_device, destination_site)
     print(f"Configured ports for device {destination_device}; site {destination_site}")
     for port in ports:

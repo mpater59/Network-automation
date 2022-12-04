@@ -34,6 +34,7 @@ def update_vxlan(selected_site, selected_device, config):
 
     swp_taken = []
     vids_taken = []
+    vnis_taken = []
 
     ports = get_neighbor_ports(selected_device, site, config)
     for port in ports:
@@ -45,6 +46,9 @@ def update_vxlan(selected_site, selected_device, config):
         if key_exists(port, list(port.keys())[0], "vid"):
             if check_if_exists(port[list(port.keys())[0]]["vid"], vids_taken) is False:
                 vids_taken.append(port[list(port.keys())[0]]["vid"])
+        if key_exists(port, list(port.keys())[0], 'vni'):
+            if check_if_exists(port[list(port.keys())[0]]["vni"], vnis_taken) is False:
+                vnis_taken.append(port[list(port.keys())[0]]["vni"])
 
     vids = []
     vnis = []
@@ -53,6 +57,9 @@ def update_vxlan(selected_site, selected_device, config):
 
     for vxlan in selected_device['vxlan']:
         if key_exists(vxlan, "vni"):
+            if check_if_exists(vxlan["vni"], vnis_taken) is True:
+                print(f"VNI {vxlan['vni']} already exists!")
+                continue
             vnis.append(vxlan["vni"])
             if len(vnis_names) > 0:
                 if check_if_exists(f'vni{vxlan["vni"]}', vnis_names) is True:
@@ -145,11 +152,13 @@ def update_vxlan(selected_site, selected_device, config):
         if key_exists(config, "bridge", "ports") is False:
             config["bridge"]["ports"] = []
         config["bridge"]["ports"].append(swp)
+        config["bridge"]["ports"].append(vni_name)
         if key_exists(config, "bridge", "vids", vid) is False:
             config["bridge"]["vids"][vid] = {}
         if key_exists(config, "bridge", "vids", vid, "bridge access") is False:
             config["bridge"]["vids"][vid]["bridge access"] = []
         config["bridge"]["vids"][vid]["bridge access"].append(swp)
+        config["bridge"]["vids"][vid]["bridge access"].append(vni_name)
 
         if key_exists(config, "vxlan", "vnis", vni_name) is False:
             config["vxlan"]["vnis"][vni_name] = {}
