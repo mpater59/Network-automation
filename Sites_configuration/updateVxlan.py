@@ -54,12 +54,16 @@ def update_vxlan(selected_site, selected_device, config):
     vnis = []
     vnis_names = []
     swps = []
+    multiple_vnis = []
 
     for vxlan in selected_device['vxlan']:
         if key_exists(vxlan, "vni"):
             if check_if_exists(vxlan["vni"], vnis_taken) is True:
-                print(f"VNI {vxlan['vni']} already exists!")
-                continue
+                if check_if_exists(vxlan["vni"], multiple_vnis) is True:
+                    print(f"VNI {vxlan['vni']} already exists!")
+                    continue
+                else:
+                    multiple_vnis.append(vxlan["vni"])
             vnis.append(vxlan["vni"])
             if len(vnis_names) > 0:
                 if check_if_exists(f'vni{vxlan["vni"]}', vnis_names) is True:
