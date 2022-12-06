@@ -200,7 +200,7 @@ def vxlan(config, db_config=None, expand=False):
 
                 # config id
                 if key_exists(vni, "id"):
-                    if key_exists(db_vni, "id") and vni["id"] != int(db_vni["id"]):
+                    if key_exists(db_vni, "id") and int(vni["id"]) != int(db_vni["id"]):
                         commands.append(f"net del vxlan {vni_id} vxlan id")
                         commands.append(f"net add vxlan {vni_id} vxlan id {vni['id']}")
                     elif db_vni is None:
@@ -211,7 +211,7 @@ def vxlan(config, db_config=None, expand=False):
 
                 # config bridge access
                 if key_exists(vni, "bridge access"):
-                    if key_exists(db_vni, "bridge access") and vni["bridge access"] != int(db_vni["bridge access"]):
+                    if key_exists(db_vni, "bridge access") and int(vni["bridge access"]) != int(db_vni["bridge access"]):
                         commands.append(f"net del vxlan {vni_id} bridge access")
                         commands.append(f"net add vxlan {vni_id} bridge access {vni['bridge access']}")
                     elif db_vni is None:
