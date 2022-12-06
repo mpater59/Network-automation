@@ -18,7 +18,7 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
-def del_device(site, devices, status=None, soft_update=False):
+def del_device(site, devices=None, status=None, soft_update=False):
 
     if site is None:
         print("Enter name of site!")
