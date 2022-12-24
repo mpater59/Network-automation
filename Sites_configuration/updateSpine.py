@@ -232,7 +232,7 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
                 db_config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
             for neigh_port_info in neigh_ports:
                 neigh_port = list(neigh_port_info.keys())[0]
-                if neigh_port_info["type"] == "leaf":
+                if neigh_port_info[neigh_port]["type"] == "leaf":
                     area = leaf_ospf
                 else:
                     area = backbone_ospf
@@ -258,7 +258,7 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
             db_config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
             for neigh_port_info in neigh_ports:
                 neigh_port = list(neigh_port_info.keys())[0]
-                if neigh_port_info["type"] == "leaf":
+                if neigh_port_info[neigh_port]["type"] == "leaf":
                     area = leaf_ospf
                 else:
                     area = backbone_ospf
@@ -270,7 +270,7 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
         db_config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
         for neigh_port_info in neigh_ports:
             neigh_port = list(neigh_port_info.keys())[0]
-            if neigh_port_info["type"] == "leaf":
+            if neigh_port_info[neigh_port]["type"] == "leaf":
                 area = leaf_ospf
             else:
                 area = backbone_ospf
@@ -282,7 +282,7 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
         config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
         for neigh_port_info in neigh_ports:
             neigh_port = list(neigh_port_info.keys())[0]
-            if neigh_port_info["type"] == "leaf":
+            if neigh_port_info[neigh_port]["type"] == "leaf":
                 area = leaf_ospf
             else:
                 area = backbone_ospf
