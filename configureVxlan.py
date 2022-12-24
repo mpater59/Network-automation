@@ -6,7 +6,6 @@ from Update_database.updateConfigurations import update
 from Sites_configuration.updateLeaf import get_neighbor_ports as leaf_ports
 from Sites_configuration.updateVxlan import update_vxlan
 from Devices_configuration.devicesConfiguration import devicesConfiguration
-from Other.other import key_exists
 
 
 stream = open("database_env.yaml", 'r')
@@ -18,18 +17,18 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
-def add_vni(site, vxlan_file, status=None, soft_update=False):
+def configure_vxlan(site, vxlan_file, status=None, soft_update=False, expand=False):
 
     vxlans = None
     if isinstance(vxlan_file, str):
-        stream = open(vxlan_file, 'r')
-        vxlans_temp = yaml.load_all(stream, Loader=yaml.Loader)
+        file = open(vxlan_file, 'r')
+        vxlans_temp = yaml.load_all(file, Loader=yaml.Loader)
 
         vxlans = []
         for config_temp in vxlans_temp:
             vxlans.append(config_temp)
             print(config_temp)
-        stream.close()
+        file.close()
     elif isinstance(vxlan_file, list):
         vxlans = vxlan_file
     else:
@@ -45,40 +44,32 @@ def add_vni(site, vxlan_file, status=None, soft_update=False):
             print("Can't find this site in DB!")
             exit()
 
-    stream = open("sites.yaml", 'r')
-    sites_file = list(yaml.load_all(stream, Loader=yaml.SafeLoader))
+    file = open("sites.yaml", 'r')
+    sites_file = list(yaml.load_all(file, Loader=yaml.SafeLoader))
     selected_site = None
     for site_file in sites_file:
         if site_file["name"] == site:
             selected_site = site_file
             break
-    stream.close()
+    file.close()
 
     first_item = True
     merged_hostnames = ''
     selected_devices = []
+    vxlan_results = []
 
     for vxlan in vxlans:
 
-        stream = open("devices.yaml", 'r')
-        devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
+        file = open("devices.yaml", 'r')
+        devices_temp = yaml.load_all(file, Loader=yaml.SafeLoader)
         selected_device = None
         for device in devices_temp:
-            if device["hostname"] == vxlan["hostname"] and device["site"] == site:
+            if device["hostname"] == vxlan["hostname"] and device["site"] == site \
+                    and device['device information']['type'] == 'leaf':
                 selected_device = device
                 selected_devices.append(device)
                 break
-        stream.close()
-
-        vxlan_config = vxlan['vxlan']
-
-        db_config = None
-        query = {"device hostname": vxlan["hostname"], "site": site, "active": True}
-        if col_configs.count_documents(query) > 0:
-            db_config = col_configs.find(query).sort("last update datetime", -1)[0].get("configuration")
-        else:
-            print(f"Couldn't find device {vxlan['hostname']} at site {site}!")
-            exit()
+        file.close()
 
         if first_item is True:
             merged_hostnames = vxlan["hostname"]
@@ -86,14 +77,10 @@ def add_vni(site, vxlan_file, status=None, soft_update=False):
         else:
             merged_hostnames += f',{vxlan["hostname"]}'
 
-        if key_exists(selected_device, "vxlan") is False:
-            selected_device['vxlan'] = []
-        for vxlan_configuration in vxlan_config:
-            selected_device['vxlan'].append(vxlan_configuration)
+        result = update_vxlan(selected_site['name'], selected_device['hostname'], vxlan['vxlan'], expand)
+        vxlan_results.append({'hostname': selected_device['hostname'], 'vxlan': result['vxlan']})
 
-        db_config = update_vxlan(selected_site, selected_device, db_config)
-
-        devicesConfiguration(site, vxlan["hostname"], db_config, soft_update, False)
+        devicesConfiguration(site, vxlan["hostname"], result['config'], soft_update, False)
 
     update(site, merged_hostnames, status)
 
@@ -115,6 +102,9 @@ def add_vni(site, vxlan_file, status=None, soft_update=False):
                 for port in ports:
                     print(port)
 
+    with open(f"{site}_vxlan_configuration.yaml", "w") as stream:
+        yaml.safe_dump_all(vxlan_results, stream, default_flow_style=False, sort_keys=False)
+
 
 parser = argparse.ArgumentParser()
 
@@ -125,7 +115,9 @@ parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status that will be set for this update in DB")
 parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, action='store_true',
                     help="Apply change without deleting existing configuration on devices (default false)")
+parser.add_argument("-ev", "--expand_vxlan", dest="expand_vxlan", default=False, action='store_true',
+                    help="Add VxLANs without deleting existing (default false)")
 
 args = parser.parse_args()
 
-add_vni(args.site, args.vxlan_file, args.status_text, args.soft_update)
+configure_vxlan(args.site, args.vxlan_file, args.status_text, args.soft_update, args.expand_vxlan)

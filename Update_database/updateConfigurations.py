@@ -31,6 +31,14 @@ col_configs = mydb[f"{db_env['DB collection configuration']}"]
 stream.close()
 
 
+def vxlan_update(config):
+    vxlan = {}
+    if key_exists(config, 'vxlan', 'vnis'):
+        for vni_name in config['vxlan']['vnis']:
+            vni = config['vxlan']['vnis'][vni_name]
+    return vxlan
+
+
 def update(site, devices=None, status=None, new_documents=False):
 
     if devices is not None:

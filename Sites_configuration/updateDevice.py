@@ -74,8 +74,8 @@ def update_device(site, device, soft_update=True, expand=False):
     # update leaf
     elif device_type == "leaf":
         config = update_leaf(selected_device, devices_file, selected_site, db_config, active, expand)
-        if key_exists(selected_device, "vxlan"):
-            config = update_vxlan(selected_site, selected_device, config)
+        # if key_exists(selected_device, "vxlan"):
+        #     config = update_vxlan(selected_site, selected_device, config)
 
     # update gw
     elif device_type == "gateway":

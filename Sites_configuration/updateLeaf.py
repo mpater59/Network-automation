@@ -1,3 +1,4 @@
+import re
 import pymongo
 import yaml
 
@@ -46,15 +47,15 @@ def get_neighbor_ports(selected_device, site, config=None):
         print("Enter name of device!")
         exit()
     else:
-        query = {"site": selected_site["name"], "active": True, "device hostname": selected_device["hostname"]}
-        if col_configs.count_documents(query) > 0:
-            db_config = col_configs.find(query).sort("last update datetime", -1)[0].get("configuration")
+        if config is not None:
+            db_config = config
         else:
-            if config is None:
+            query = {"site": selected_site["name"], "active": True, "device hostname": selected_device["hostname"]}
+            if col_configs.count_documents(query) > 0:
+                db_config = col_configs.find(query).sort("last update datetime", -1)[0].get("configuration")
+            else:
                 print(f"Couldn't find active configuration for device {selected_device['hostname']} in DB!")
                 exit()
-            else:
-                db_config = config
 
     device_config_id = selected_device["device information"]["id"]
     site_id = selected_site["site id"]
@@ -81,13 +82,26 @@ def get_neighbor_ports(selected_device, site, config=None):
                 if check_if_exists(interface, config_neighs) is False:
                     neigh_ports.append({interface: {"ip address": db_int["ip address"]}})
 
-    if key_exists(selected_device, "vxlan"):
-        for vxlan_info in selected_device["vxlan"]:
-            if key_exists(vxlan_info, "port") and key_exists(vxlan_info, "vni") and key_exists(vxlan_info, "vid"):
-                neigh_ports.append({vxlan_info['port']: {'vni': vxlan_info["vni"], 'vid': vxlan_info["vid"]}})
-            elif key_exists(vxlan_info, "port") and key_exists(vxlan_info, "vni"):
-                neigh_ports.append({vxlan_info['port']: {'vni': vxlan_info["vni"]}})
-
+    if key_exists(db_config, "vxlan", "vnis"):
+        for vxlan in db_config['vxlan']['vnis']:
+            vni = db_config['vxlan']['vnis'][vxlan]
+            vni_id = vni['id']
+            vni_vid = vni['bridge access']
+            if key_exists(db_config, 'bridge', 'vids'):
+                for vid in db_config['bridge']['vids']:
+                    if str(vid) == str(vni_vid) and key_exists(db_config['bridge']['vids'][vid], 'bridge access'):
+                        for port in db_config['bridge']['vids'][vid]['bridge access']:
+                            if re.search('^swp\d+', port):
+                                port_founded = False
+                                for index, interface in enumerate(neigh_ports):
+                                    if port == list(interface.keys())[0]:
+                                        port_dict = neigh_ports[index]
+                                        port_dict[port]['vni'].append(vni_id)
+                                        port_founded = True
+                                        break
+                                if port_founded is False:
+                                    neigh_ports.append({port: {'vni': [vni_id], 'vid': vid}})
+                        break
     return neigh_ports
 
 
@@ -102,7 +116,7 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
     device_config_id = selected_device["device information"]["id"]
     device_swp = selected_device["number of ports"]
     site_as = selected_site["bgp as"]
-    site_ospf = selected_site["ospf area"]
+    leaf_ospf = '1.1.1.1'
     site_id = selected_site["site id"]
     device_id = f'1.1.{site_id}.{100+device_config_id}'
 
@@ -217,19 +231,19 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
             db_config["ospf"]["router-id"] = device_id
         if key_exists(db_config, "ospf", "interfaces"):
             if key_exists(db_config, "ospf", "interfaces", "lo", "area"):
-                if db_config["ospf"]["interfaces"]["lo"]["area"] != site_ospf:
-                    db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
+                if db_config["ospf"]["interfaces"]["lo"]["area"] != leaf_ospf:
+                    db_config["ospf"]["interfaces"]["lo"]["area"] = leaf_ospf
             else:
-                db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
+                db_config["ospf"]["interfaces"]["lo"]["area"] = leaf_ospf
             for neigh_port in neigh_ports:
                 neigh_port = list(neigh_port.keys())[0]
                 if key_exists(db_config, "ospf", "interfaces", neigh_port):
                     port = db_config["ospf"]["interfaces"][neigh_port]
                     if key_exists(port, "area"):
-                        if port["area"] != site_ospf:
-                            port["area"] = site_ospf
+                        if port["area"] != leaf_ospf:
+                            port["area"] = leaf_ospf
                     else:
-                        port["area"] = site_ospf
+                        port["area"] = leaf_ospf
                     if key_exists(port, "network"):
                         if port["network"] != "point-to-point":
                             port["network"] = "point-to-point"
@@ -237,31 +251,31 @@ def update_leaf(selected_device, devices_file, selected_site, db_config=None, ac
                         port["network"] = "point-to-point"
                 else:
                     db_config["ospf"]["interfaces"][neigh_port] = {}
-                    db_config["ospf"]["interfaces"][neigh_port]["area"] = site_ospf
+                    db_config["ospf"]["interfaces"][neigh_port]["area"] = leaf_ospf
                     db_config["ospf"]["interfaces"][neigh_port]["network"] = "point-to-point"
         else:
             db_config["ospf"]["interfaces"] = {}
             db_config["ospf"]["interfaces"]["lo"] = {}
-            db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
+            db_config["ospf"]["interfaces"]["lo"]["area"] = leaf_ospf
             for neigh_port in neigh_ports:
                 neigh_port = list(neigh_port.keys())[0]
-                db_config["ospf"]["interfaces"].update({neigh_port: {"area": site_ospf, "network": "point-to-point"}})
+                db_config["ospf"]["interfaces"].update({neigh_port: {"area": leaf_ospf, "network": "point-to-point"}})
     elif active is True:
         db_config["ospf"] = {"router-id": device_id}
         db_config["ospf"]["interfaces"] = {}
         db_config["ospf"]["interfaces"]["lo"] = {}
-        db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
+        db_config["ospf"]["interfaces"]["lo"]["area"] = leaf_ospf
         for neigh_port in neigh_ports:
             neigh_port = list(neigh_port.keys())[0]
-            db_config["ospf"]["interfaces"].update({neigh_port: {"area": site_ospf, "network": "point-to-point"}})
+            db_config["ospf"]["interfaces"].update({neigh_port: {"area": leaf_ospf, "network": "point-to-point"}})
     else:
         config["ospf"] = {"router-id": device_id}
         config["ospf"]["interfaces"] = {}
         config["ospf"]["interfaces"]["lo"] = {}
-        config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
+        config["ospf"]["interfaces"]["lo"]["area"] = leaf_ospf
         for neigh_port in neigh_ports:
             neigh_port = list(neigh_port.keys())[0]
-            config["ospf"]["interfaces"].update({neigh_port: {"area": site_ospf, "network": "point-to-point"}})
+            config["ospf"]["interfaces"].update({neigh_port: {"area": leaf_ospf, "network": "point-to-point"}})
 
     # update ospf (expand=False)
     if expand is False and key_exists(db_config, "ospf", "interfaces"):

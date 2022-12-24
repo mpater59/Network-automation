@@ -104,7 +104,8 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
     device_config_id = selected_device["device information"]["id"]
     device_swp = selected_device["number of ports"]
     site_as = selected_site["bgp as"]
-    site_ospf = selected_site["ospf area"]
+    backbone_ospf = '0.0.0.0'
+    leaf_ospf = '1.1.1.1'
     site_id = selected_site["site id"]
     device_id = f'1.1.{site_id}.{device_config_id}'
 
@@ -225,19 +226,23 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
             db_config["ospf"]["router-id"] = device_id
         if key_exists(db_config, "ospf", "interfaces"):
             if key_exists(db_config, "ospf", "interfaces", "lo", "area"):
-                if db_config["ospf"]["interfaces"]["lo"]["area"] != site_ospf:
-                    db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
+                if db_config["ospf"]["interfaces"]["lo"]["area"] != backbone_ospf:
+                    db_config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
             else:
-                db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
-            for neigh_port in neigh_ports:
-                neigh_port = list(neigh_port.keys())[0]
+                db_config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
+            for neigh_port_info in neigh_ports:
+                neigh_port = list(neigh_port_info.keys())[0]
+                if neigh_port_info["type"] == "leaf":
+                    area = leaf_ospf
+                else:
+                    area = backbone_ospf
                 if key_exists(db_config, "ospf", "interfaces", neigh_port):
                     port = db_config["ospf"]["interfaces"][neigh_port]
                     if key_exists(port, "area"):
-                        if port["area"] != site_ospf:
-                            port["area"] = site_ospf
+                        if port["area"] != area:
+                            port["area"] = area
                     else:
-                        port["area"] = site_ospf
+                        port["area"] = area
                     if key_exists(port, "network"):
                         if port["network"] != "point-to-point":
                             port["network"] = "point-to-point"
@@ -245,31 +250,43 @@ def update_spine(selected_device, devices_file, selected_site, db_config=None, a
                         port["network"] = "point-to-point"
                 else:
                     db_config["ospf"]["interfaces"][neigh_port] = {}
-                    db_config["ospf"]["interfaces"][neigh_port]["area"] = site_ospf
+                    db_config["ospf"]["interfaces"][neigh_port]["area"] = area
                     db_config["ospf"]["interfaces"][neigh_port]["network"] = "point-to-point"
         else:
             db_config["ospf"]["interfaces"] = {}
             db_config["ospf"]["interfaces"]["lo"] = {}
-            db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
-            for neigh_port in neigh_ports:
-                neigh_port = list(neigh_port.keys())[0]
-                db_config["ospf"]["interfaces"].update({neigh_port: {"area": site_ospf, "network": "point-to-point"}})
+            db_config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
+            for neigh_port_info in neigh_ports:
+                neigh_port = list(neigh_port_info.keys())[0]
+                if neigh_port_info["type"] == "leaf":
+                    area = leaf_ospf
+                else:
+                    area = backbone_ospf
+                db_config["ospf"]["interfaces"].update({neigh_port: {"area": area, "network": "point-to-point"}})
     elif active is True:
         db_config["ospf"] = {"router-id": device_id}
         db_config["ospf"]["interfaces"] = {}
         db_config["ospf"]["interfaces"]["lo"] = {}
-        db_config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
-        for neigh_port in neigh_ports:
-            neigh_port = list(neigh_port.keys())[0]
-            db_config["ospf"]["interfaces"].update({neigh_port: {"area": site_ospf, "network": "point-to-point"}})
+        db_config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
+        for neigh_port_info in neigh_ports:
+            neigh_port = list(neigh_port_info.keys())[0]
+            if neigh_port_info["type"] == "leaf":
+                area = leaf_ospf
+            else:
+                area = backbone_ospf
+            db_config["ospf"]["interfaces"].update({neigh_port: {"area": area, "network": "point-to-point"}})
     else:
         config["ospf"] = {"router-id": device_id}
         config["ospf"]["interfaces"] = {}
         config["ospf"]["interfaces"]["lo"] = {}
-        config["ospf"]["interfaces"]["lo"]["area"] = site_ospf
-        for neigh_port in neigh_ports:
-            neigh_port = list(neigh_port.keys())[0]
-            config["ospf"]["interfaces"].update({neigh_port: {"area": site_ospf, "network": "point-to-point"}})
+        config["ospf"]["interfaces"]["lo"]["area"] = backbone_ospf
+        for neigh_port_info in neigh_ports:
+            neigh_port = list(neigh_port_info.keys())[0]
+            if neigh_port_info["type"] == "leaf":
+                area = leaf_ospf
+            else:
+                area = backbone_ospf
+            config["ospf"]["interfaces"].update({neigh_port: {"area": area, "network": "point-to-point"}})
 
     # update ospf (expand=False)
     if expand is False and key_exists(db_config, "ospf", "interfaces"):

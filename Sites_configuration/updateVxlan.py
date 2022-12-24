@@ -1,16 +1,78 @@
-import re
+# import re
 import yaml
 import pymongo
 
 from Other.other import key_exists
-from Other.other import check_if_exists
-from Sites_configuration.updateLeaf import get_neighbor_ports
+# from Other.other import check_if_exists
+from bson import ObjectId
+from Sites_configuration.updateLeaf import get_neighbor_ports as leaf_ports
+
+stream = open("database_env.yaml", 'r')
+db_env = yaml.load(stream, Loader=yaml.SafeLoader)
+
+myclient = pymongo.MongoClient(f"mongodb://{db_env['DB address IP']}/")
+mydb = myclient[f"{db_env['DB name']}"]
+col_configs = mydb[f"{db_env['DB collection configuration']}"]
+stream.close()
 
 
-def update_vxlan(selected_site, selected_device, config):
+def get_vxlan(site, device, config_db=None):
+    if site is None:
+        print("Enter name of site!")
+        exit()
+    else:
+        query = {"site": site}
+        if col_configs.count_documents(query) == 0:
+            print("Can't find this site in DB!")
+            exit()
 
-    cp_device_vxlan = []
-    site = selected_site['name']
+    stream = open("devices.yaml", 'r')
+    devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
+    selected_device = None
+    for device_temp in devices_temp:
+        if device_temp['hostname'] == device and device_temp['site'] == site \
+                and device_temp['device information']['type'] == 'leaf':
+            selected_device = device_temp
+            break
+    stream.close()
+    if selected_device is None:
+        print(f"Device {device} is not Leaf!")
+        return
+
+    if config_db is None:
+        query = {"site": site, "device hostname": device, "active": True}
+        if col_configs.count_documents(query) > 0:
+            conf_id = str(col_configs.find(query).sort("last update datetime", -1)[0].get("_id"))
+            get_condition = {'_id': ObjectId(f"{conf_id}")}
+        else:
+            print(f"Couldn't find device {device} in DB!")
+            return
+        config_db = col_configs.find_one(get_condition)
+
+    ports = leaf_ports(selected_device, site, config_db['configuration'])
+
+    vxlan = {}
+    for port in ports:
+        port_name = list(port.keys())[0]
+        if 'vni' not in port[port_name]:
+            continue
+
+        vnis = port[port_name]['vni']
+        vid = int(port[port_name]['vid'])
+
+        for vni in vnis:
+            if key_exists(vxlan, vni) is False:
+                vxlan[int(vni)] = {}
+                vxlan[int(vni)]['vid'] = vid
+                vxlan[int(vni)]['ports'] = []
+            if port_name not in vxlan[int(vni)]['ports']:
+                vxlan[int(vni)]['ports'].append(port_name)
+
+    return vxlan
+
+
+def update_vxlan(site, device, vxlan_config, expand=False):
+    result = {}
 
     stream = open("database_env.yaml", 'r')
     db_env = yaml.load(stream, Loader=yaml.SafeLoader)
@@ -29,173 +91,198 @@ def update_vxlan(selected_site, selected_device, config):
             print("Can't find this site in DB!")
             exit()
 
-    if key_exists(selected_device, "vxlan") is False:
-        return config
+    stream = open("sites.yaml", 'r')
+    sites_file = list(yaml.load_all(stream, Loader=yaml.SafeLoader))
+    selected_site = None
+    for site_file in sites_file:
+        if site_file["name"] == site:
+            selected_site = site_file
+            break
+    stream.close()
 
-    swp_taken = []
+    query = {"device hostname": device, "site": site, "active": True}
+    if col_configs.count_documents(query) > 0:
+        db_config = col_configs.find(query).sort("last update datetime", -1)[0].get("configuration")
+    else:
+        print(f"Couldn't find active device {device} at site {site}!")
+        return
+
+    stream = open("devices.yaml", 'r')
+    devices_temp = yaml.load_all(stream, Loader=yaml.SafeLoader)
+    selected_device = None
+    for device_temp in devices_temp:
+        if device_temp["hostname"] == device and device_temp["site"] == site:
+            selected_device = device_temp
+            break
+    stream.close()
+
+    if selected_device is None:
+        print(f"Couldn't fine device {device} at site {site}!")
+        return
+
+    # configure vxlan
+
+    ports_taken = {}
     vids_taken = []
-    vnis_taken = []
+    vxlan_result = {}
 
-    ports = get_neighbor_ports(selected_device, site, config)
+    ports = leaf_ports(selected_device, site)
+
     for port in ports:
-        if check_if_exists(list(port.keys())[0], swp_taken) is False:
-            swp_taken.append(list(port.keys())[0])
-        else:
-            print(f'Found multiple usage of switchport {list(port.keys())[0]} for device {selected_device["hostname"]}!')
-            exit()
-        if key_exists(port, list(port.keys())[0], "vid"):
-            if check_if_exists(port[list(port.keys())[0]]["vid"], vids_taken) is False:
-                vids_taken.append(port[list(port.keys())[0]]["vid"])
-        if key_exists(port, list(port.keys())[0], 'vni'):
-            if check_if_exists(port[list(port.keys())[0]]["vni"], vnis_taken) is False:
-                vnis_taken.append(port[list(port.keys())[0]]["vni"])
+        port_name = list(port.keys())[0]
+        if port_name not in ports_taken and 'vni' not in port[port_name]:
+            ports_taken[port_name] = {}
+        if 'vni' not in port[port_name]:
+            continue
 
-    vids = []
-    vnis = []
-    vnis_names = []
-    swps = []
-    multiple_vnis = []
+        if expand is True:
+            vxlan_result = get_vxlan(site, selected_device['hostname'])
+            for vxlan in vxlan_result:
+                vni = int(vxlan)
+                vids_taken.append(int(vxlan_result[vni]['vid']))
+                for port_result in vxlan_result[vni]['ports']:
+                    if port_result not in ports_taken:
+                        ports_taken.update({port_result: {'vid': int(vxlan_result[vni]['vid'])}})
 
-    for vxlan in selected_device['vxlan']:
-        if key_exists(vxlan, "vni"):
-            if check_if_exists(vxlan["vni"], vnis_taken) is True:
-                if check_if_exists(vxlan["vni"], multiple_vnis) is True:
-                    print(f"VNI {vxlan['vni']} already exists!")
-                    continue
-                else:
-                    multiple_vnis.append(vxlan["vni"])
-            vnis.append(vxlan["vni"])
-            if len(vnis_names) > 0:
-                if check_if_exists(f'vni{vxlan["vni"]}', vnis_names) is True:
-                    x = 2
-                    while True:
-                        if check_if_exists(f'vni{vxlan["vni"]}-{x}', vnis_names) is False:
-                            vnis_names.append(f'vni{vxlan["vni"]}-{x}')
-                            break
-                        else:
-                            x += 1
-                else:
-                    vnis_names.append(f'vni{vxlan["vni"]}')
-            else:
-                vnis_names.append(f'vni{vxlan["vni"]}')
-        else:
-            print("Enter VNI for every VxLAN!")
-            exit()
+    for vxlan in vxlan_config:
+        vni = int(vxlan)
+        if 'vid' in vxlan_config[vni]:
+            vids_taken.append(int(vxlan_config[vni]['vid']))
 
-        if key_exists(vxlan, "vid"):
-            vids.append(vxlan["vid"])
-        else:
+    for vxlan in vxlan_config:
+        vni = int(vxlan)
+        if vni not in vxlan_result:
+            vxlan_result[vni] = {}
+
+        # config vid
+        if 'vid' not in vxlan_config[vni] and 'vid' not in vxlan_result[vni]:
             new_vid = 10
             while True:
                 if new_vid > 4096:
                     print("Couldn't find free VID")
                     break
-                if check_if_exists(new_vid, vids_taken) is False:
+                if new_vid not in vids_taken:
                     vids_taken.append(new_vid)
-                    vids.append(new_vid)
+                    vxlan_result[vni]['vid'] = new_vid
                     break
                 new_vid += 10
-
-        if key_exists(vxlan, "port"):
-            swps.append(vxlan["port"])
+        elif 'vid' in vxlan_config[vni]:
+            new_vid = int(vxlan_config[vni]['vid'])
+            if 'vid' in vxlan_result[vni]:
+                for port in ports_taken:
+                    if 'vid' in ports_taken[port] and int(ports_taken[port]['vid']) == int(vxlan_result[vni]['vid']):
+                        ports_taken[port]['vid'] = new_vid
+            vxlan_result[vni]['vid'] = new_vid
+            if vxlan_config[vni]['vid'] in vids_taken:
+                vids_taken.remove(vxlan_config[vni]['vid'])
         else:
-            free_port = False
-            for new_swp in range(selected_device["number of ports"]):
-                if check_if_exists(f'swp{new_swp+1}', swp_taken) is False:
-                    swp_taken.append(f'swp{new_swp+1}')
-                    swps.append(f'swp{new_swp+1}')
-                    free_port = True
-                    break
-            if free_port is False:
-                print(f"Couldn't find free port for new VNI for device {selected_device['hostname']}!")
+            new_vid = int(vxlan_result[vni]['vid'])
 
-    if key_exists(config, "vxlan") is False:
-        config["vxlan"] = {}
-    if key_exists(config, "vxlan", "vnis") is False:
-        config["vxlan"]["vnis"] = {}
-    if key_exists(config, "bridge") is False:
-        config["bridge"] = {}
-    if key_exists(config, "bridge", "vids") is False:
-        config["bridge"]["vids"] = {}
-    if key_exists(config, "bridge", "ports") is False:
-        config["bridge"]["ports"] = []
+        # config ports
+        if 'ports' in vxlan_config[vni]:
+            if 'ports' not in vxlan_result[vni]:
+                vxlan_result[vni]['ports'] = []
+            for port in vxlan_config[vni]['ports']:
+                if port in ports_taken and 'vid' in ports_taken[port] and ports_taken[port]['vid'] != new_vid:
+                    print(f"Port {port} has assigned different VID!")
+                    continue
+                elif port in ports_taken and 'vid' in ports_taken[port]:
+                    if port not in vxlan_result[vni]['ports']:
+                        vxlan_result[vni]['ports'].append(port)
+                else:
+                    vxlan_result[vni]['ports'].append(port)
+                    ports_taken.update({port: {'vid': new_vid}})
 
-    swp_del = []
-    for port in config["bridge"]["ports"]:
-        if re.search("^swp\d+", port):
-            swp_del.append(port)
-    config["bridge"]["ports"] = []
+    # config add ports
+    for vxlan in vxlan_config:
+        vni = int(vxlan)
+        new_vid = vxlan_result[vni]['vid']
+        if 'add ports' in vxlan_config[vni] or ('ports' not in vxlan_config[vni] and 'ports' not in vxlan_result[vni]):
+            if 'ports' not in vxlan_result[vni]:
+                vxlan_result[vni]['ports'] = []
+            if 'add ports' in vxlan_config[vni]:
+                add_ports = int(vxlan_config[vni]['add ports'])
+                number_of_ports = len(vxlan_result[vni]['ports']) + add_ports
+            else:
+                add_ports = 1
+                number_of_ports = len(vxlan_result[vni]['ports']) + add_ports
+            for _ in range(add_ports):
+                for x in range(selected_device['number of ports']):
+                    if f'swp{x + 1}' in ports_taken and 'vid' in ports_taken[f'swp{x + 1}'] \
+                            and ports_taken[f'swp{x + 1}']['vid'] == new_vid \
+                            and f'swp{x + 1}' not in vxlan_result[vni]['ports']:
+                        vxlan_result[vni]['ports'].append(f'swp{x + 1}')
+                    if len(vxlan_result[vni]['ports']) == number_of_ports:
+                        break
+                if len(vxlan_result[vni]['ports']) < number_of_ports:
+                    for x in range(selected_device['number of ports']):
+                        if f'swp{x + 1}' not in ports_taken:
+                            vxlan_result[vni]['ports'].append(f'swp{x + 1}')
+                            ports_taken.update({f'swp{x + 1}': {'vid': new_vid}})
+                        if len(vxlan_result[vni]['ports']) == number_of_ports:
+                            break
+                    if len(vxlan_result[vni]['ports']) < number_of_ports:
+                        print(f"Couldn't find free ports for device {selected_device['hostname']}")
 
-    temp_vids = []
-    for temp_vid in config["bridge"]["vids"]:
-        temp_vids.append(temp_vid)
-    for vid in temp_vids:
-        config["bridge"]["vids"].pop(vid, None)
+    for port in ports_taken:
+        if 'vid' in ports_taken[port]:
+            vid = int(ports_taken[port]['vid'])
+            for vxlan in vxlan_result:
+                vni = int(vxlan)
+                if vxlan_result[vni]['vid'] == vid and port not in vxlan_result[vni]['ports']:
+                    vxlan_result[vni]['ports'].append(port)
 
-    temp_vnis = []
-    for temp_vni in config["vxlan"]["vnis"]:
-        temp_vnis.append(temp_vni)
-    for vni in temp_vnis:
-        config["vxlan"]["vnis"].pop(vni, None)
+    for vxlan in vxlan_result:
+        vni = int(vxlan)
+        vxlan_result[vni]['ports'].sort()
 
-    temp_interfaces = []
-    for temp_interface in config["interfaces"]:
-        temp_interfaces.append(temp_interface)
-    for interface in temp_interfaces:
-        if check_if_exists(interface, swp_del):
-            config["interfaces"].pop(interface, None)
+    # prepare yaml config
+    db_config['vxlan'] = {}
+    db_config['vxlan']['vnis'] = {}
+    db_config['bridge'] = {}
+    if len(vxlan_result) == 0:
+        result['config'] = db_config
+        result['vxlan'] = vxlan_result
+        return result
+    db_config['bridge']['ports'] = []
+    db_config['bridge']['vids'] = {}
+    db_config['bridge']['bridge-vlan-aware'] = True
 
-    temp_ospf = []
-    for temp_ospf_int in config["ospf"]["interfaces"]:
-        temp_ospf.append(temp_ospf_int)
-    for interface in temp_ospf:
-        if check_if_exists(interface, swp_del):
-            config["ospf"]["interfaces"].pop(interface, None)
+    vid_list = []
+    for vid in db_config['bridge']['vids']:
+        vid_list.append(vid)
 
-    for vni, vni_name, vid, swp in zip(vnis, vnis_names, vids, swps):
-        if key_exists(config, "bridge", "ports") is False:
-            config["bridge"]["ports"] = []
-        config["bridge"]["ports"].append(swp)
-        config["bridge"]["ports"].append(vni_name)
-        if key_exists(config, "bridge", "vids", vid) is False:
-            config["bridge"]["vids"][vid] = {}
-        if key_exists(config, "bridge", "vids", vid, "bridge access") is False:
-            config["bridge"]["vids"][vid]["bridge access"] = []
-        config["bridge"]["vids"][vid]["bridge access"].append(swp)
-        config["bridge"]["vids"][vid]["bridge access"].append(vni_name)
+    if selected_device['device information']['type'] == 'leaf':
+        device_lo = f"1.1.{selected_site['site id']}.{100 + selected_device['device information']['id']}"
+    else:
+        print(f"Selected device {device} is not a Leaf!")
+        return
 
-        if key_exists(config, "vxlan", "vnis", vni_name) is False:
-            config["vxlan"]["vnis"][vni_name] = {}
-        config["vxlan"]["vnis"][vni_name]["bridge access"] = vid
-        config["vxlan"]["vnis"][vni_name]["id"] = vni
-        config["vxlan"]["vnis"][vni_name]["local-tunnelip"] = \
-            f'1.1.{selected_site["site id"]}.{100+selected_device["device information"]["id"]}'
+    for vni in vxlan_result:
+        vni_name = f'vni{vni}'
+        vid = vxlan_result[vni]['vid']
+        ports = vxlan_result[vni]['ports']
 
-        if key_exists(config, 'interfaces') is False:
-            config['interfaces'] = {}
-        config['interfaces'][swp] = {}
-        if key_exists(config, 'ospf', 'interfaces') is False:
-            config['ospf']['interfaces'] = {}
-        config['ospf']['interfaces'][swp] = {}
+        db_config['vxlan']['vnis'][vni_name] = {}
+        db_config['vxlan']['vnis'][vni_name]['bridge access'] = vid
+        db_config['vxlan']['vnis'][vni_name]['id'] = vni
+        db_config['vxlan']['vnis'][vni_name]['local-tunnelip'] = device_lo
 
-        cp_device_vxlan.append({'vni': vni, 'vid': vid, 'port': swp})
+        if vni_name not in db_config['bridge']['ports']:
+            db_config['bridge']['ports'].append(vni_name)
+        if vid not in vid_list:
+            db_config['bridge']['vids'][vid] = {}
+            db_config['bridge']['vids'][vid]['bridge access'] = []
+            vid_list.append(vid)
+        if vni_name not in db_config['bridge']['vids'][vid]['bridge access']:
+            db_config['bridge']['vids'][vid]['bridge access'].append(vni_name)
 
-    if selected_device['vxlan'] != cp_device_vxlan:
-        db_devices = []
-        stream = open("devices.yaml", 'r')
-        devices_temp = yaml.load_all(stream, Loader=yaml.Loader)
-        for device_temp in devices_temp:
-            db_devices.append(device_temp)
-        stream.close()
+        for port in ports:
+            if port not in db_config['bridge']['ports']:
+                db_config['bridge']['ports'].append(port)
+            if port not in db_config['bridge']['vids'][vid]['bridge access']:
+                db_config['bridge']['vids'][vid]['bridge access'].append(port)
 
-        for device in db_devices:
-            if device["hostname"] == selected_device["hostname"] and device["site"] == site:
-                device['vxlan'] = []
-                for vxlan in cp_device_vxlan:
-                    device['vxlan'].append(vxlan)
-                break
-
-        with open("devices.yaml", "w") as stream:
-            yaml.safe_dump_all(db_devices, stream, default_flow_style=False, sort_keys=False)
-
-    return config
+    result['config'] = db_config
+    result['vxlan'] = vxlan_result
+    return result
