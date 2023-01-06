@@ -89,7 +89,7 @@ def update_devices(site, devices, status=None, soft_update=True):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
-parser.add_argument("-d", "--devices", dest="devices",
+parser.add_argument("-d", "--device", dest="devices",
                     help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
 parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status that will be set for this update in DB")

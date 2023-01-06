@@ -79,7 +79,7 @@ def del_vxlan(site, devices=None, vnis=None, ports=None, status=None, soft_updat
                 for vni in vxlan.copy():
                     if int(vni) == int(vni_del):
                         vxlan.pop(vni, None)
-        elif selected_ports is not None:
+        if selected_ports is not None:
             for port_del in selected_ports:
                 for vni in vxlan.copy():
                     if 'ports' in vxlan[int(vni)] and port_del in vxlan[int(vni)]['ports']:
@@ -87,7 +87,7 @@ def del_vxlan(site, devices=None, vnis=None, ports=None, status=None, soft_updat
             for vni in vxlan.copy():
                 if 'ports' in vxlan[int(vni)] and len(vxlan[int(vni)]['ports']) == 0:
                     vxlan.pop(vni, None)
-        else:
+        if selected_vnis is None and selected_ports is None:
             for vni in vxlan.copy():
                 vxlan.pop(vni, None)
 

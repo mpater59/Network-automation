@@ -1,4 +1,4 @@
-DB address IP: "192.168.1.12:9000"
+DB address IP: "192.168.1.13:9000"
 DB name: "configsdb"
 DB collection configuration: "configurations"
 DB collection devices: "devices"

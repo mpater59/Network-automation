@@ -113,10 +113,10 @@ parser.add_argument("-vf", "--vxlan_file", dest="vxlan_file",
                     help="Path to .yaml file with new VxLAN configs")
 parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status that will be set for this update in DB")
-parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, action='store_true',
-                    help="Apply change without deleting existing configuration on devices (default false)")
 parser.add_argument("-ev", "--expand_vxlan", dest="expand_vxlan", default=False, action='store_true',
                     help="Add VxLANs without deleting existing (default false)")
+parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, action='store_true',
+                    help="Apply change without deleting existing configuration on devices (default false)")
 
 args = parser.parse_args()
 

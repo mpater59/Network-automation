@@ -149,20 +149,19 @@ def configRollback(config_id=None, soft_rollback=False, status="stable", devices
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument("-st", "--site", dest="site", help="Name of site")
+parser.add_argument("-d", "--device", dest="device", default=None,
+                    help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
 parser.add_argument("-sr", "--soft_rollback", dest="soft_rollback", default=False, action='store_true',
                     help="Apply rollback without deleting existing configuration on devices (default false)")
+parser.add_argument("-pc", "--previous_config", dest="previous_config", default=False, action='store_true',
+                    help="Apply rollback from previous configuration set (default false)")
+parser.add_argument("-t", "--status_text", dest="status_text", default="stable",
+                    help='Text of configuration set status from which rollback will be applied (default "stable")')
 parser.add_argument("-id", "--config_id", dest="config_id", default=None,
                     help="ID of configuration set in DB (optional)")
 parser.add_argument("-dt", "--datetime", dest="config_update_date", default=None,
                     help="Datetime of configuration set in DB, dd/mm/YYYY HH:MM:SS format (optional)")
-parser.add_argument("-st", "--site", dest="site", help="Name of site")
-parser.add_argument("-d", "--device", dest="device", default=None,
-                    help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
-parser.add_argument("-t", "--status_text", dest="status_text", default="stable",
-                    help='Text of configuration set status from which rollback will be applied (default "stable")')
-parser.add_argument("-pc", "--previous_config", dest="previous_config", default=False, action='store_true',
-                    help="Apply rollback from previous configuration set (default false)")
-
 
 args = parser.parse_args()
 

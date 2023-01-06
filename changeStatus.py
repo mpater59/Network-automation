@@ -114,17 +114,17 @@ def changeStatus(site, devices=None, status="stable", config_id=None, config_upd
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument("-st", "--site", dest="site", help="Name of site")
+parser.add_argument("-d", "--device", dest="device", default=None,
+                    help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
 parser.add_argument("-t", "--status_text", dest="status_text", default="stable",
                     help="Text status that will be inserted to DB for selected configuration")
 parser.add_argument("-id", "--config_id", dest="config_id", default=None,
                     help="ID of configuration set in DB (optional)")
 parser.add_argument("-dt", "--datetime", dest="config_update_date", default=None,
                     help="Datetime of configuration set in DB, dd/mm/YYYY HH:MM:SS format (optional)")
-parser.add_argument("-st", "--site", dest="site", help="Name of site")
-parser.add_argument("-d", "--device", dest="device", default=None,
-                    help="Name of devices, separate with ',' (default parameter will set status for all devices in selected site)")
 parser.add_argument("-oa", "--only_active", dest="active", default=False, action='store_true',
-                    help="Change status only on active configuration (cannot be used with -id and -st flags)")
+                    help="Change status only on active configuration (cannot be used with -id and -dt flags)")
 
 args = parser.parse_args()
 

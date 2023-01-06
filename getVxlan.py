@@ -142,10 +142,10 @@ def get_configuration(site, file=None, devices=None, status=None, config_id=None
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
-parser.add_argument("-f", "--file_name", dest="file_name", default=None,
-                    help="File name where you want save configurations from DB (optional)")
 parser.add_argument("-d", "--device", dest="device", default=None,
                     help="Name of devices, separate with ',' (default parameter will get all devices in selected site)")
+parser.add_argument("-f", "--file_name", dest="file_name", default=None,
+                    help="File name where you want save configurations from DB (optional)")
 parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status of configuration set in DB (optional)")
 parser.add_argument("-id", "--config_id", dest="config_id", default=None,

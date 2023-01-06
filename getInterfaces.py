@@ -75,7 +75,7 @@ def get_interfaces(site, devices):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-st", "--site", dest="site", help="Name of site")
-parser.add_argument("-d", "--devices", dest="devices",
+parser.add_argument("-d", "--device", dest="devices",
                     help="Name of devices, separate with ',' (default parameter will get interfaces information for all devices in selected site)")
 
 args = parser.parse_args()

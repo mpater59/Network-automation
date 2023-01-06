@@ -22,10 +22,7 @@ stream.close()
 
 
 def migrate_vni(source_site, source_device, destination_site, destination_device, ports=None, vnis=None,
-                status=None, soft_update=False, extend=False):
-    # if ports is not None and vnis is not None:
-    #     print("Can't use flags --ports and --vnis simultaneously!")
-    #     exit()
+                status=None, soft_update=False, extend=False, extend_ports=False):
 
     if source_site is None:
         print("Enter name of source site!")
@@ -64,8 +61,6 @@ def migrate_vni(source_site, source_device, destination_site, destination_device
         print(f"Couldn't find source device {source_device}!")
     if d_device is None:
         print(f"Couldn't find source device {destination_device}!")
-
-    vxlan_migrate = []
 
     s_vxlan = get_vxlan(source_site, source_device)
     if extend is True:
@@ -133,10 +128,14 @@ def migrate_vni(source_site, source_device, destination_site, destination_device
                 new_vid += 10
 
     for vni in s_vxlan:
+        vni_exists = True
         if vni not in d_vxlan:
             d_vxlan[vni] = {}
+            vni_exists = False
         d_vxlan[vni]['vid'] = new_vids[vni]
-        if 'ports' in s_vxlan[vni]:
+        if vni_exists is False and 'ports' in s_vxlan[vni]:
+            d_vxlan[vni]['add ports'] = len(s_vxlan[vni]['ports'])
+        elif vni_exists is True and extend_ports is True and 'ports' in s_vxlan[vni]:
             d_vxlan[vni]['add ports'] = len(s_vxlan[vni]['ports'])
 
     result = update_vxlan(destination_site, destination_device, d_vxlan)
@@ -169,7 +168,9 @@ parser.add_argument("-p", "--ports", dest="ports", default=None,
 parser.add_argument("-vx", "--vnis", dest="vnis", default=None,
                     help="Index of VNI, separate with ',' (default parameter will migrate all known VNIs from source device)")
 parser.add_argument("-ex", "--extend", dest="extend", default=False, action='store_true',
-                    help="Migrate new VNIs without deleting old VNIs from destination device")
+                    help="Migrate new VNIs without deleting old VNIs from destination device (default false)")
+parser.add_argument("-ep", "--extend_ports", dest="extend_ports", default=False, action='store_true',
+                    help="Add new ports even if VNI already exists (default false)")
 parser.add_argument("-t", "--status_text", dest="status_text", default=None,
                     help="Text status that will be set for this update in DB")
 parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, action='store_true',
@@ -178,4 +179,4 @@ parser.add_argument("-su", "--soft_update", dest="soft_update", default=False, a
 args = parser.parse_args()
 
 migrate_vni(args.source_site, args.source_device, args.destination_site, args.destination_device, args.ports, args.vnis,
-            args.status_text, args.soft_update, args.extend)
+            args.status_text, args.soft_update, args.extend, args.extend_ports)
