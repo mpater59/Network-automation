@@ -1,0 +1,169 @@
+_id: !ObjectID: '6377c3cde0c17a86ba4ba3bf'
+last update datetime: 2022-11-18 17:41:27
+archived update datetime: []
+config set information:
+  last config set id: !ObjectID: '6377c3b3e0c17a86ba4ba3bb'
+  archived config set id: []
+  last config set datetime: 2022-11-18 17:41:07
+  archived config set datetime: []
+device information:
+  type: leaf
+  id: 2
+site: test1
+device hostname: Leaf2
+status: unverified
+active: true
+hostname: Leaf2
+interfaces:
+  swp1:
+    ip address:
+    - 10.1.2.2/30
+  swp2:
+    ip address:
+    - 10.2.2.2/30
+  swp4: {}
+loopback:
+  ip address:
+  - 1.1.1.102/32
+ospf:
+  router-id: 1.1.1.102
+  interfaces:
+    lo:
+      area: 0.0.0.0
+    swp1:
+      area: 1.1.1.1
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      network: point-to-point
+    swp4: {}
+bgp:
+  as: '100'
+  neighbors:
+    1.1.1.11:
+      remote: '100'
+      update: lo
+      activate evpn: false
+    1.1.1.12:
+      remote: '102'
+      update: lo
+      activate evpn: true
+  router-id: 1.1.1.102
+  advertise-all-vni: true
+vlan:
+  '20':
+    ip address:
+    - 192.168.2.254/24
+    vlan-id: '20'
+    vlan-raw-device bridge: true
+bridge:
+  ports:
+  - swp4
+  - vni20
+  vids:
+    '20':
+      bridge access:
+      - vni20
+      - swp6
+  bridge-vlan-aware: true
+vxlan:
+  vnis:
+    vni20:
+      bridge access: '20'
+      bridge learning: false
+      id: '10020'
+      local-tunnelip: 1.1.1.102
+---
+_id: !ObjectID: '6377c3c7e0c17a86ba4ba3be'
+last update datetime: 2022-11-18 17:41:20
+archived update datetime: []
+config set information:
+  last config set id: !ObjectID: '6377c3b3e0c17a86ba4ba3bb'
+  archived config set id: []
+  last config set datetime: 2022-11-18 17:41:07
+  archived config set datetime: []
+device information:
+  type: leaf
+  id: 1
+site: test1
+device hostname: Leaf1
+status: unverified
+active: true
+hostname: Leaf1
+interfaces:
+  swp1:
+    ip address:
+    - 10.1.1.2/30
+  swp2:
+    ip address:
+    - 10.2.1.2/30
+  swp3: {}
+  swp4: {}
+loopback:
+  ip address:
+  - 1.1.1.101/32
+ospf:
+  router-id: 1.1.1.101
+  interfaces:
+    lo:
+      area: 0.0.0.0
+    swp1:
+      area: 0.0.0.0
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      network: point-to-point
+    swp3: {}
+    swp4: {}
+bgp:
+  as: '100'
+  neighbors:
+    1.1.1.11:
+      remote: '100'
+      update: lo
+      activate evpn: true
+    1.1.1.12:
+      remote: '100'
+      update: lo
+      activate evpn: true
+  router-id: 1.1.1.101
+  advertise-all-vni: true
+vlan:
+  '10':
+    ip address:
+    - 192.168.1.254/24
+    vlan-id: '10'
+    vlan-raw-device bridge: true
+  '20':
+    ip address:
+    - 192.168.2.254/24
+    vlan-id: '20'
+    vlan-raw-device bridge: true
+bridge:
+  ports:
+  - swp3
+  - swp4
+  - vni10
+  - vni20
+  vids:
+    '10':
+      bridge access:
+      - swp3
+      - vni10
+    '20':
+      bridge access:
+      - swp4
+      - vni20
+  bridge-vlan-aware: true
+vxlan:
+  vnis:
+    vni10:
+      bridge access: '10'
+      bridge learning: false
+      id: '10010'
+      local-tunnelip: 1.1.1.101
+    vni20:
+      bridge access: '20'
+      bridge learning: false
+      id: '10020'
+      local-tunnelip: 1.1.1.101

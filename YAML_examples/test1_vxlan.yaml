@@ -1,0 +1,35 @@
+hostname: Leaf1
+vxlan:
+  10010:
+    vid: 10
+    ports:
+    - swp3
+  10020:
+    vid: 20
+    ports:
+    - swp4
+---
+hostname: Leaf2
+vxlan:
+  10020:
+    vid: 10
+    ports:
+    - swp4
+---
+hostname: Leaf3
+vxlan:
+  10010:
+    vid: 10
+    ports:
+    - swp3
+---
+hostname: Leaf4
+vxlan:
+  10010:
+    vid: 10
+    ports:
+    - swp3
+  10020:
+    vid: 20
+    ports:
+    - swp4

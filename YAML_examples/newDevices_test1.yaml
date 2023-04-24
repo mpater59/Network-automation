@@ -1,0 +1,12 @@
+machine type: linux
+ip address: 10.0.10.201
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+device type: gateway
+number of ports: 6
+as neighbors:
+  200:
+    ip address:
+      - 10.20.1.2/30

@@ -1,0 +1,16 @@
+hostname: Leaf1
+vxlan:
+  10010:
+    add ports: 2
+  10020:
+    vid: 10
+    ports:
+    - swp4
+    add ports: 1
+---
+hostname: Leaf3
+vxlan:
+  10020:
+    vid: 10
+    ports:
+    - swp5

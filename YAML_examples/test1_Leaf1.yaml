@@ -1,0 +1,64 @@
+device information:
+  type: leaf
+  id: 1
+site: test1
+device hostname: Leaf1
+status: stable
+active: true
+hostname: test1-Leaf1
+interfaces:
+  swp1:
+    ip address:
+    - 10.1.1.2/30
+  swp2:
+    ip address:
+    - 10.2.1.2/30
+  swp3: {}
+  swp4: {}
+loopback:
+  ip address:
+  - 1.1.10.101/32
+static routes: []
+ospf:
+  interfaces:
+    lo:
+      area: 0.0.0.0
+    swp1:
+      area: 0.0.0.0
+      network: point-to-point
+    swp2:
+      area: 0.0.0.0
+      network: point-to-point
+    swp3: {}
+    swp4: {}
+  router-id: 1.1.10.101
+bgp:
+  as: '100'
+  neighbors:
+    1.1.10.1:
+      remote: '100'
+      update: lo
+      activate evpn: true
+    1.1.10.2:
+      remote: '100'
+      update: lo
+      activate evpn: true
+  router-id: 1.1.10.101
+  advertise-all-vni: true
+vlan: {}
+bridge:
+  ports:
+  - swp4
+  - vni10020
+  vids:
+    '20':
+      bridge access:
+      - swp4
+      - vni10020
+  bridge-vlan-aware: true
+vxlan:
+  vnis:
+    vni10020:
+      bridge access: '20'
+      id: '10020'
+      local-tunnelip: 1.1.10.101

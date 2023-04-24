@@ -1,0 +1,41 @@
+machine type: linux
+ip address: 10.0.20.201
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+device type: gateway
+number of ports: 6
+as neighbors:
+  100:
+    ip address:
+      - 10.20.1.1/30
+---
+machine type: linux
+ip address: 10.0.20.11
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+device type: spine
+number of ports: 6
+---
+machine type: linux
+ip address: 10.0.20.101
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+device type: leaf
+number of ports: 6
+vxlan:
+- vni: 10030
+---
+machine type: linux
+ip address: 10.0.20.102
+username: cumulus
+password: cumulus1
+secret: cumulus1
+port: 22
+device type: leaf
+number of ports: 6
